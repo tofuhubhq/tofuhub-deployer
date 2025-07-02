@@ -11,7 +11,7 @@ variable "do_region" {
 
 variable "do_size" {
   type        = string
-  default     = "s-1vcpu-1gb"
+  default     = "g-2vcpu-8gb" //GPU enabled machine
   description = "Droplet size"
 }
 
@@ -48,19 +48,37 @@ resource "digitalocean_droplet" "runner" {
     timeout     = "2m"
   }
 
-  provisioner "remote-exec" {
+    provisioner "remote-exec" {
     inline = [
+      # Wait for apt lock
+      "while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo 'Waiting for apt lock...'; sleep 1; done",
+
+      # Update and install Docker + curl
       "apt-get update -y",
-      "apt-get install -y docker.io",
+      "apt-get install -y docker.io curl",
+
+      # Start Docker
       "systemctl enable docker",
       "systemctl start docker",
-       # Optional: Allow traffic to port 3000 (or whatever your runner uses)
-      "ufw allow 3030",
 
-      # Pull the runner image
+      # Optional: UFW rules for runner and Ollama
+      "ufw allow 3030",
+      "ufw allow 11434",
+      "ufw --force enable",
+
+      # Install Ollama
+      "curl -fsSL https://ollama.com/install.sh | sh",
+
+      # Preload a model
+      "ollama pull llama3",
+
+      # Start Ollama server in background
+      "nohup ollama serve > /var/log/ollama.log 2>&1 &",
+
+      # Pull the runner container
       "docker pull tofuhub/cli-runner:v0.0.1",
 
-      # Run the runner in the background
+      # Run the runner
       "docker run -d --name tofuhub-runner -p 3030:3030 tofuhub/cli-runner:v0.0.1"
     ]
   }
