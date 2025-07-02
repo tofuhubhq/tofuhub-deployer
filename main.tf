@@ -5,13 +5,13 @@ variable "do_access_token" {
 
 variable "do_region" {
   type        = string
-  default     = "ams3"
+  default     = "nyc2"
   description = "Region for the droplet"
 }
 
 variable "do_size" {
   type        = string
-  default     = "g-2vcpu-8gb" //GPU enabled machine
+  default     = "s-8vcpu-16gb"
   description = "Droplet size"
 }
 
