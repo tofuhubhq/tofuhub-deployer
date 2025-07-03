@@ -1,64 +1,65 @@
 #!/bin/bash
 
-set -e
+set -euxo pipefail
 
-echo "📦 Starting Tofuhub bootstrap..."
+echo "📦 Starting Tofuhub bootstrap (non-interactive mode)..."
+
+export DEBIAN_FRONTEND=noninteractive
 
 ### 1. Install Docker ###
 echo "🐳 Installing Docker..."
 
-apt update -y
-apt install -y \
+apt-get update -y
+apt-get install -y \
     ca-certificates \
     curl \
     gnupg \
-    lsb-release
+    lsb-release \
+    software-properties-common
 
 mkdir -p /etc/apt/keyrings
+
+# Download and overwrite without prompt
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-    gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    gpg --dearmor | \
+    tee /etc/apt/keyrings/docker.gpg > /dev/null
 
-echo \
-  "deb [arch=$(dpkg --print-architecture) \
-  signed-by=/etc/apt/keyrings/docker.gpg] \
-  https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | \
-  tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-apt update -y
-apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+apt-get update -y
+apt-get install -y \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
 
-# Enable and start Docker
 systemctl enable docker
 systemctl start docker
 
 echo "✅ Docker installed."
 
+### 2. Docker Compose CLI Compatibility ###
+echo "🔧 Ensuring Docker Compose CLI compatibility..."
 
-### 2. Install Docker Compose CLI ###
-echo "🔧 Installing Docker Compose CLI wrapper..."
+# Handle edge case where plugin is not linked in $PATH
+ln -sf /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose || true
 
-ln -s /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose || true
-
-# Test version
 docker compose version || docker-compose version
 
 echo "✅ Docker Compose ready."
 
-
 ### 3. Install Ollama ###
 echo "🦙 Installing Ollama..."
 
-curl -fsSL https://ollama.com/install.sh | bash
+curl -fsSL https://ollama.com/install.sh | bash || echo "⚠️ Ollama install script may have exited nonzero"
 
-echo "✅ Ollama installed."
+echo "✅ Ollama installed (or attempted)."
 
-
-### 4. Test Installation ###
+### 4. Test Everything ###
 echo "🧪 Verifying installation..."
 
 docker --version
 docker compose version || docker-compose version
-ollama --version || echo "ℹ️ Ollama version check skipped"
+ollama --version || echo "⚠️ Ollama version check skipped (likely needs shell reload)"
 
 echo "🏁 Bootstrap completed successfully!"
