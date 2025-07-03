@@ -8,7 +8,7 @@ import { fetchPackage } from "./repo.js";
 import { runDockerComposeService } from "./docker.js";
 
 function runDockerBuild(stepName, path) {
-  const dockerBuild = spawn('docker', ['build', '-t', `tofuhub-${stepName}`, '.'], {
+  const dockerBuild = spawn('docker', ['build', '--network', 'host', '-t', `tofuhub-${stepName}`, '.'], {
     cwd: path,
   });  
 
