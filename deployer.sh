@@ -2,6 +2,7 @@
 
 set -euxo pipefail
 
+export HOME="${HOME:-/root}"
 echo "📦 Starting Tofuhub bootstrap (non-interactive mode)..."
 
 export DEBIAN_FRONTEND=noninteractive
