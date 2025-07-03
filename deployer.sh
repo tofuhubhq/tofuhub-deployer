@@ -1,9 +1,13 @@
 #!/bin/bash
 
+TOFUHUB_API_TOKEN_VAR=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbHRuanJyemttYXp2YnJxYmtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3ODk1NzcsImV4cCI6MjA1MjM2NTU3N30.2iz-ErTvlZ_o8rvYfFWWhlbo6RRTE0FWFlk7vQQkETg
+
 set -euxo pipefail
 
 export HOME="${HOME:-/root}"
 echo "📦 Starting Tofuhub bootstrap (non-interactive mode)..."
+echo TOFUHUB_API_TOKEN="$TOFUHUB_API_TOKEN_VAR" >> /etc/environment
+export TOFUHUB_API_TOKEN="$TOFUHUB_API_TOKEN_VAR"
 
 export DEBIAN_FRONTEND=noninteractive
 

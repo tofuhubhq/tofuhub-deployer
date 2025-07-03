@@ -3,6 +3,16 @@ import path from 'path';
 import fs from 'fs';
 import { execSync } from 'child_process';
 
+let _githubToken = ``;
+
+export function getGithubToken() {
+  return _githubToken;
+}
+
+export function setGithubToken(token) {
+  _githubToken = token;
+  return _githubToken;
+}
 
 async function repoExistsOnGithub(name, githubToken, org = null) {
   const perPage = 100;

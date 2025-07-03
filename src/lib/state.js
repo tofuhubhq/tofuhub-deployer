@@ -1,4 +1,3 @@
-import { getToken } from "./auth.js";
 import { fetchPackage } from "./repo.js";
 
 let _state = {
@@ -38,12 +37,11 @@ export async function initState(packages) {
 
   // Fetch the package details to figure out the type of package,
   // i.e. if it's a package or an agent.
-  const token = getToken();
   const fetchedPackages = [];
   for (const pkg of packages) {
     const pkgDetails = await fetchPackage(
       `https://api.tofuhub.co/functions/v1/packages/${pkg}`,
-      token
+      process.env.TOFUHUB_API_TOKEN
     );
 
     fetchedPackages.push(pkgDetails)

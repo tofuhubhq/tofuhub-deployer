@@ -1,9 +1,8 @@
-import { getGithubToken, getToken } from "./auth.js";
 import { getState, getSteps, getInputs } from "./state.js"
 import path from 'path';
 import fs from 'fs';
 import { execSync, spawn } from "child_process";
-import { createGithubRepoAndPush } from "./github.js";
+import { createGithubRepoAndPush, getGithubToken } from "./github.js";
 import { sendToClients } from "./ws.js";
 import { fetchPackage } from "./repo.js";
 import { runDockerComposeService } from "./docker.js";
@@ -41,10 +40,9 @@ async function processStep(stepWithDetails) {
     return;
   }
 
-  const token = getToken();
   const pkgDetails = await fetchPackage(
     `https://api.tofuhub.co/functions/v1/packages/${packageName}`,
-    token
+    process.env.TOFUHUB_API_TOKEN
   );
   
   // If the tofuhub directory does not exist, then create it. This is where

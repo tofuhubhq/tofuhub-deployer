@@ -4,17 +4,26 @@ import fs from 'fs';
 import { getState, initState, resetState, setInputs, setVariables } from './lib/state.js';
 import fastifyStatic from '@fastify/static';
 import websocket from '@fastify/websocket';
+
+const certPath = '/etc/tofuhub/certs/cert.pem';
+const keyPath = '/etc/tofuhub/certs/key.pem';
+
+const useSSL = fs.existsSync(certPath) && fs.existsSync(keyPath);
+
 const fastify = Fastify({
   logger: true,
-  https: {
-    key: fs.readFileSync('/etc/tofuhub/certs/key.pem'),
-    cert: fs.readFileSync('/etc/tofuhub/certs/cert.pem')
-  }
+  ...(useSSL && {
+    https: {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath)
+    }
+  })
 });
 import { resolve } from 'path';
 
 import { rm } from 'fs/promises';
 import { logClients } from './lib/ws.js';
+import { setGithubToken } from './lib/github.js';
 
 // Serve static files from the "public" folder
 fastify.register(fastifyStatic, {
@@ -55,6 +64,15 @@ fastify.post('/state/init', async (request) => {
 // POST /state/reset resets the state
 fastify.post('/state/reset', async () => {
   return resetState();
+});
+
+// POST /state/reset resets the state
+fastify.post('/auth/github', async (request) => {
+  let { github_token } = request.body;
+  const res = setGithubToken(github_token);
+  return {
+    "github_token": res
+  }
 });
 
 async function start() {
