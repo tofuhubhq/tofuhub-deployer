@@ -40,4 +40,12 @@ docker --version
 docker compose version || docker-compose version
 ollama --version || echo "⚠️ Ollama version check skipped (likely needs shell reload)"
 
+echo "🛠️ Starting Ollama server in background..."
+nohup ollama serve > /var/log/ollama.log 2>&1 &
+
+echo "🚀 Pulling llama3 model..."
+ollama run llama3 || echo "⚠️ Model load failed"
+
+echo "✅ Ollama is serving at http://localhost:11434"
+
 echo "🏁 Bootstrap completed successfully!"
