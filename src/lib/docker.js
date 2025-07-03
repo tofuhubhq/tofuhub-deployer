@@ -73,7 +73,7 @@ ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${
 
   return new Promise((resolve, reject) => {
     container.on('exit', (code) => {
-
+      console.info(`exiting`, code)
       fs.rmSync(overridePath, { force: true });
       if (code !== 0) {
         console.info(code)
@@ -84,6 +84,7 @@ ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${
     });
 
     container.on('error', (err) => {
+      console.info(err)
       fs.rmSync(overridePath, { force: true });
       return reject(err);
     });
