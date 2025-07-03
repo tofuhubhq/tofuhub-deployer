@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import { run } from './lib/runner.js'
+import fs from 'fs';
 import { getState, initState, resetState, setInputs, setVariables } from './lib/state.js';
 import fastifyStatic from '@fastify/static';
 import websocket from '@fastify/websocket';
