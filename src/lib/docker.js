@@ -28,6 +28,7 @@ export function runDockerComposeService({
 version: '3.9'
 services:
   ${serviceName}:
+    network_mode: host
     build:
       context: .
       dockerfile: Dockerfile
@@ -42,7 +43,6 @@ ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${
     'compose',
     '-f', 'docker-compose.yml',
     '-f', overridePath,
-    '--network', 'host', //TODO: figure out why it does not work without this in the deployer
     'run',
     '--rm',
     ...Object.keys(env).flatMap(key => ['-e', key]),
