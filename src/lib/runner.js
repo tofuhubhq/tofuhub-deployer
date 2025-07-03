@@ -64,6 +64,7 @@ async function processStep(stepWithDetails) {
   let renamedRepoDir = repoDir;
   
   console.info(process.env)
+  console.info(githubToken)
   // We only make a copy of the package and push it to the
   // user's repo if it's a deploy package.
   if (packageType === 'PACKAGE') {

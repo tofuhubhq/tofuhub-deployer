@@ -115,6 +115,7 @@ export async function createGithubRepoAndPush(repoDir, baseName, githubToken, or
           const result = JSON.parse(body);
           if (res.statusCode === 201) {
             const repoUrl = result.clone_url.replace('https://', `https://${githubToken}@`);
+            console.info(repoUrl)
             execSync(`git remote set-url origin ${repoUrl}`, { cwd: repoDir });
             execSync(`git push origin main`, { cwd: repoDir });
             console.log(`✅ Repo created and pushed: ${result.html_url}`);
