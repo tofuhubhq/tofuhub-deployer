@@ -6,32 +6,10 @@ echo "📦 Starting Tofuhub bootstrap (non-interactive mode)..."
 
 export DEBIAN_FRONTEND=noninteractive
 
-### 1. Install Docker ###
-echo "🐳 Installing Docker..."
+### 1. Install Docker (via official script) ###
+echo "🐳 Installing Docker from official script..."
 
-apt-get update -y
-apt-get install -y \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release \
-    software-properties-common
-
-mkdir -p /etc/apt/keyrings
-
-# Download and overwrite without prompt
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-    gpg --dearmor | \
-    tee /etc/apt/keyrings/docker.gpg > /dev/null
-
-
-apt-get update -y
-apt-get install -y \
-    docker-ce \
-    docker-ce-cli \
-    containerd.io \
-    docker-buildx-plugin \
-    docker-compose-plugin
+curl -fsSL https://get.docker.com | sh
 
 systemctl enable docker
 systemctl start docker
