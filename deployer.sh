@@ -53,6 +53,9 @@ cd tofuhub-deployer
 echo "📂 Running npm install in $(pwd)..."
 npm install || echo "⚠️ npm install failed"
 
+echo "🚀 Starting Tofuhub Deployer in background..."
+nohup npm run start > /var/log/tofuhub-deployer.log 2>&1 &
+
 ### 6. Test Everything ###
 echo "🧪 Verifying installation..."
 
