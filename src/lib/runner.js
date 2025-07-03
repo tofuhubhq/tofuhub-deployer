@@ -101,6 +101,7 @@ async function processStep(stepWithDetails) {
   // await runDockerBuild(`tofuhub-${name}`, renamedRepoDir);
   const overridePath = path.join(os.tmpdir(), 'tofuhub.override.yml');
   const serviceName = 'tofuhub-runner';
+  const resolvedRepoDir = path.resolve(repoDir);
     // === Generate override file for volumes ===
   const volumeMappings = [
     [os.homedir() + '/.ssh', '/root/.ssh:ro'],
@@ -123,7 +124,6 @@ async function processStep(stepWithDetails) {
   
   fs.writeFileSync(overridePath, overrideYml);
 
-  const resolvedRepoDir = path.resolve(repoDir);
 
   const env = {
     githubToken,
