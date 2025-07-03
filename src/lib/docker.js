@@ -20,7 +20,7 @@ export function runDockerComposeService({
   const volumeMappings = [
     [os.homedir() + '/.ssh', '/root/.ssh:ro'],
     [resolvedRepoDir, '/repo'],
-    ['/var/run/docker.sock', '/var/run/docker.sock'],
+    // ['/var/run/docker.sock', '/var/run/docker.sock'],
     ...extraVolumes
   ];
 
@@ -60,14 +60,17 @@ ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${
   });
 
   container.stdout.on('data', (data) => {
+    console.info(data)
     sendToClients(data.toString());
   });
 
   container.stderr.on('data', (data) => {
+    console.info(data)
     sendToClients(data.toString());
   });
 
   container.on('close', (code) => {
+    console.info(code)
     sendToClients(`[container exited with code ${code}]\n`);
   });
 

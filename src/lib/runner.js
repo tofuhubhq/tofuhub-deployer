@@ -97,7 +97,7 @@ async function processStep(stepWithDetails) {
 
   console.log(`🐳 Building Docker image for ${name}`);
   
-  await runDockerBuild(`tofuhub-${name}`, renamedRepoDir);
+  // await runDockerBuild(`tofuhub-${name}`, renamedRepoDir);
   
   console.log(`🚀 Running container for ${name}`);
   return runDockerComposeService({
