@@ -3,7 +3,13 @@ import { run } from './lib/runner.js'
 import { getState, initState, resetState, setInputs, setVariables } from './lib/state.js';
 import fastifyStatic from '@fastify/static';
 import websocket from '@fastify/websocket';
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({
+  logger: true,
+  https: {
+    key: fs.readFileSync('/etc/tofuhub/certs/key.pem'),
+    cert: fs.readFileSync('/etc/tofuhub/certs/cert.pem')
+  }
+});
 import { resolve } from 'path';
 
 import { rm } from 'fs/promises';
@@ -52,7 +58,7 @@ fastify.post('/state/reset', async () => {
 
 async function start() {
   try {
-    const address = await fastify.listen({ port: 3030, host: '0.0.0.0' });
+    const address = await fastify.listen({ port: 443, host: '0.0.0.0' });
 
     // Clean up current tofuhub folder on start
     try {

@@ -7,6 +7,16 @@ echo "📦 Starting Tofuhub bootstrap (non-interactive mode)..."
 
 export DEBIAN_FRONTEND=noninteractive
 
+echo "🔐 Generating self-signed cert..."
+
+mkdir -p /etc/tofuhub/certs
+openssl req -x509 -nodes -days 365 \
+  -newkey rsa:2048 \
+  -keyout /etc/tofuhub/certs/key.pem \
+  -out /etc/tofuhub/certs/cert.pem \
+  -subj "/CN=localhost"
+
+
 ### 4. Install Node.js and npm ###
 echo "📦 Installing Node.js and npm..."
 
