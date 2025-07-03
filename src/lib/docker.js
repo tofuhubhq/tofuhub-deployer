@@ -42,6 +42,7 @@ ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${
     'compose',
     '-f', 'docker-compose.yml',
     '-f', overridePath,
+    '--network', 'host', //TODO: figure out why it does not work without this in the deployer
     'run',
     '--rm',
     ...Object.keys(env).flatMap(key => ['-e', key]),
