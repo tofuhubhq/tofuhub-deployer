@@ -8,20 +8,31 @@ import { fetchPackage } from "./repo.js";
 import { runDockerComposeService } from "./docker.js";
 
 function runDockerBuild(stepName, path) {
-  const dockerBuild = spawn('docker', ['build', '--network', 'host', '-t', `tofuhub-${stepName}`, '.'], {
-    cwd: path,
-  });  
+  return new Promise((resolve, reject) => {
+    const dockerBuild = spawn('docker', ['build', '--network', 'host', '-t', `tofuhub-${stepName}`, '.'], {
+      cwd: path,
+    });
 
-  dockerBuild.stdout.on('data', (data) => {
-    sendToClients(data.toString());
-  });
+    dockerBuild.stdout.on('data', (data) => {
+      sendToClients(data.toString());
+    });
 
-  dockerBuild.stderr.on('data', (data) => {
-    sendToClients(data.toString());
-  });
+    dockerBuild.stderr.on('data', (data) => {
+      sendToClients(data.toString());
+    });
 
-  dockerBuild.on('close', (code) => {
-    sendToClients(`[build done: exit code ${code}]`);
+    dockerBuild.on('close', (code) => {
+      sendToClients(`[build done: exit code ${code}]`);
+      if (code === 0) {
+        return resolve();
+      } else {
+        return reject(new Error(`Docker build failed with exit code ${code}`));
+      }
+    });
+
+    dockerBuild.on('error', (err) => {
+      return reject(err);
+    });
   });
 }
 
@@ -86,7 +97,7 @@ async function processStep(stepWithDetails) {
 
   console.log(`🐳 Building Docker image for ${name}`);
   
-  runDockerBuild(`tofuhub-${name}`, renamedRepoDir);
+  await runDockerBuild(`tofuhub-${name}`, renamedRepoDir);
   
   console.log(`🚀 Running container for ${name}`);
   return runDockerComposeService({
