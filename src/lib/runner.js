@@ -107,7 +107,6 @@ async function processStep(stepWithDetails) {
     [os.homedir() + '/.ssh', '/root/.ssh:ro'],
     [resolvedRepoDir, '/repo'],
     // ['/var/run/docker.sock', '/var/run/docker.sock'],
-    ...extraVolumes
   ];
   
   const overrideYml = `
@@ -123,7 +122,6 @@ async function processStep(stepWithDetails) {
   `;
   
   fs.writeFileSync(overridePath, overrideYml);
-
 
   const env = {
     githubToken,
