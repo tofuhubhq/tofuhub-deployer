@@ -68,7 +68,7 @@ function getFormValues() {
 }
 
 function setupLogStream(stepName) {
-  const socket = new WebSocket(`ws://${location.host}/logs`);
+  const socket = new WebSocket(`wss://${location.host}/logs`);
 
   socket.onmessage = (event) => {
     console.info(event)
