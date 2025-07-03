@@ -1,5 +1,6 @@
 import { getState, getSteps, getInputs } from "./state.js"
 import path from 'path';
+import os from 'os';
 import fs from 'fs';
 import { execSync, spawn } from "child_process";
 import { createGithubRepoAndPush, getGithubToken } from "./github.js";
