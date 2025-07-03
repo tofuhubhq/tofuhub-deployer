@@ -1,1 +1,1 @@
-touch test.py
+touch ~/test.py
