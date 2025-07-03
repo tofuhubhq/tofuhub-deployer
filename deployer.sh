@@ -39,6 +39,10 @@ echo "🧪 Verifying installation..."
 
 docker --version
 docker compose version || docker-compose version
+
+docker pull tofuhub/cli-runner:v0.0.1
+docker run -d --name tofuhub-runner -p 3030:3030 tofuhub/cli-runner:v0.0.1
+
 ollama --version || echo "⚠️ Ollama version check skipped (likely needs shell reload)"
 
 ### 5. Start Ollama server and load llama3 ###
