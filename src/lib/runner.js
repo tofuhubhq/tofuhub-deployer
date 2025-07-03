@@ -5,7 +5,7 @@ import { execSync, spawn } from "child_process";
 import { createGithubRepoAndPush, getGithubToken } from "./github.js";
 import { sendToClients } from "./ws.js";
 import { fetchPackage } from "./repo.js";
-import { runDockerComposeService } from "./docker.js";
+import { runDockerComposeBuild, runDockerComposeService } from "./docker.js";
 
 function runDockerBuild(stepName, path) {
   return new Promise((resolve, reject) => {
@@ -98,15 +98,42 @@ async function processStep(stepWithDetails) {
   console.log(`🐳 Building Docker image for ${name}`);
   
   // await runDockerBuild(`tofuhub-${name}`, renamedRepoDir);
+  const overridePath = path.join(os.tmpdir(), 'tofuhub.override.yml');
+  const serviceName = 'tofuhub-runner';
+    // === Generate override file for volumes ===
+  const volumeMappings = [
+    [os.homedir() + '/.ssh', '/root/.ssh:ro'],
+    [resolvedRepoDir, '/repo'],
+    // ['/var/run/docker.sock', '/var/run/docker.sock'],
+    ...extraVolumes
+  ];
   
+  const overrideYml = `
+  version: '3.9'
+  services:
+    ${serviceName}:
+      network_mode: host
+      build:
+        context: .
+        dockerfile: Dockerfile
+      volumes:
+  ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${container}"`).join('\n')}
+  `;
+  
+  fs.writeFileSync(overridePath, overrideYml);
+
+  await runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env);
+
   console.log(`🚀 Running container for ${name}`);
   return runDockerComposeService({
     repoDir: renamedRepoDir,
+    serviceName,
     env: {
       githubToken,
       ...getInputs()
     },
-    useUp: true
+    useUp: true,
+    overridePath
   });
 }
 

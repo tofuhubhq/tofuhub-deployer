@@ -4,39 +4,47 @@ import os from 'os';
 import { spawn } from "child_process";
 import { sendToClients } from './ws.js';
 
+export function runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env) {
+  const build = spawn('docker', [
+    'compose',
+    '-f', 'docker-compose.yml',
+    '-f', overridePath,
+    'build',
+    serviceName
+  ], {
+    cwd: resolvedRepoDir,
+    env: { ...process.env, ...env }
+  });
+
+  build.stdout.on('data', (data) => {
+    sendToClients(data.toString());
+  });
+
+  build.stderr.on('data', (data) => {
+    sendToClients(data.toString());
+  });
+
+  build.on('close', (code) => {
+    if (code === 0) {
+      resolve();
+    } else {
+      reject(new Error(`docker compose build failed with code ${code}`));
+    }
+  });
+
+  build.on('error', reject);
+}
+
 export function runDockerComposeService({
   repoDir,
   serviceName = 'tofuhub-worker',
   env = {},                       // key-value map
   command = null,                 // command override (e.g. 'node src/index.js')
-  extraVolumes = [],              // [ [local, container], ... ]
-  extraPorts = ["6080:6080"]                 // [ "6080:6080", "3000:3000", ... ]
+  extraPorts = ["6080:6080"],                 // [ "6080:6080", "3000:3000", ... ]
+  overridePath
 }) {
 
   const resolvedRepoDir = path.resolve(repoDir);
-  const overridePath = path.join(os.tmpdir(), 'tofuhub.override.yml');
-
-  // === Generate override file for volumes ===
-  const volumeMappings = [
-    [os.homedir() + '/.ssh', '/root/.ssh:ro'],
-    [resolvedRepoDir, '/repo'],
-    // ['/var/run/docker.sock', '/var/run/docker.sock'],
-    ...extraVolumes
-  ];
-
-  const overrideYml = `
-version: '3.9'
-services:
-  ${serviceName}:
-    network_mode: host
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${container}"`).join('\n')}
-`;
-
-  fs.writeFileSync(overridePath, overrideYml);
 
   // === Build docker compose run command ===
   const composeArgs = [
