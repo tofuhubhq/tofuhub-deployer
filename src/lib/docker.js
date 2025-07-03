@@ -36,15 +36,13 @@ export function runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir
 }
 
 export function runDockerComposeService({
-  repoDir,
+  resolvedRepoDir,
   serviceName = 'tofuhub-worker',
   env = {},                       // key-value map
   command = null,                 // command override (e.g. 'node src/index.js')
   extraPorts = ["6080:6080"],                 // [ "6080:6080", "3000:3000", ... ]
   overridePath
 }) {
-
-  const resolvedRepoDir = path.resolve(repoDir);
 
   // === Build docker compose run command ===
   const composeArgs = [

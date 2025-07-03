@@ -122,16 +122,20 @@ async function processStep(stepWithDetails) {
   
   fs.writeFileSync(overridePath, overrideYml);
 
+  const resolvedRepoDir = path.resolve(repoDir);
+
+  const env = {
+    githubToken,
+    ...getInputs()
+  };
+
   await runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env);
 
   console.log(`🚀 Running container for ${name}`);
   return runDockerComposeService({
-    repoDir: renamedRepoDir,
+    resolvedRepoDir,
     serviceName,
-    env: {
-      githubToken,
-      ...getInputs()
-    },
+    env,
     useUp: true,
     overridePath
   });
