@@ -46,12 +46,38 @@ nohup npm run start > /var/log/tofuhub-deployer.log 2>&1 &
 ### 1. Install Docker (via official script) ###
 echo "🐳 Installing Docker from official script..."
 
-curl -fsSL https://get.docker.com | sh
+echo "🐳 Installing Docker via apt (official repository)..."
 
+apt-get update
+apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+# Add Docker's GPG key
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+  gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+# Add Docker's official repository
+echo \
+  "deb [arch=$(dpkg --print-architecture) \
+  signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | \
+  tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update
+
+# Install Docker engine + CLI + Compose plugin
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Enable and start Docker
 systemctl enable docker
 systemctl start docker
 
-echo "✅ Docker installed."
+echo "✅ Docker installed via apt"
 
 ### 2. Docker Compose CLI Compatibility ###
 echo "🔧 Ensuring Docker Compose CLI compatibility..."
