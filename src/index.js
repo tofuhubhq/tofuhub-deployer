@@ -4,6 +4,9 @@ import fs from 'fs';
 import { getState, initState, resetState, setInputs, setVariables } from './lib/state.js';
 import fastifyStatic from '@fastify/static';
 import websocket from '@fastify/websocket';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const certPath = '/etc/tofuhub/certs/cert.pem';
 const keyPath = '/etc/tofuhub/certs/key.pem';

@@ -15,7 +15,7 @@ function mergeInputsWithConflictCheck(steps) {
   const seenKeys = new Set();
 
   for (const step of steps) {
-    const inputs = step.versions.variables.inputs;
+    const inputs = step.versions.configuration.inputs;
 
     for (const [key, value] of Object.entries(inputs)) {
       if (seenKeys.has(key)) {

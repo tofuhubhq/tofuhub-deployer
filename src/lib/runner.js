@@ -45,6 +45,7 @@ async function processStep(stepWithDetails) {
     process.env.TOFUHUB_API_TOKEN
   );
   
+  console.info(pkgDetails)
   // If the tofuhub directory does not exist, then create it. This is where
   // all the repos will be cloned into by the runner
   const cwd = process.cwd();
