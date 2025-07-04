@@ -31,18 +31,6 @@ echo "✅ Node.js and npm installed."
 node -v
 npm -v
 
-### 5. Clone tofuhub-deployer repo ###
-echo "📥 Cloning Tofuhub Deployer..."
-git clone https://github.com/tofuhubhq/tofuhub-deployer.git
-cd tofuhub-deployer
-
-### 5. Run npm install in current directory ###
-echo "📂 Running npm install in $(pwd)..."
-npm install || echo "⚠️ npm install failed"
-
-echo "🚀 Starting Tofuhub Deployer in background..."
-nohup npm run start > /var/log/tofuhub-deployer.log 2>&1 &
-
 ### 1. Install Docker (via official script) ###
 echo "🐳 Installing Docker from official script..."
 
@@ -62,6 +50,19 @@ ln -sf /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-comp
 docker compose version || docker-compose version
 
 echo "✅ Docker Compose ready."
+
+### 5. Clone tofuhub-deployer repo ###
+echo "📥 Cloning Tofuhub Deployer..."
+git clone https://github.com/tofuhubhq/tofuhub-deployer.git
+cd tofuhub-deployer
+
+### 5. Run npm install in current directory ###
+echo "📂 Running npm install in $(pwd)..."
+npm install || echo "⚠️ npm install failed"
+
+echo "🚀 Starting Tofuhub Deployer in background..."
+nohup npm run start > /var/log/tofuhub-deployer.log 2>&1 &
+
 
 ### 3. Install Ollama ###
 echo "🦙 Installing Ollama..."

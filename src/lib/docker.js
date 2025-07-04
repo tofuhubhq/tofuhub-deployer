@@ -11,7 +11,6 @@ export function runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir
     'build',
     serviceName
   ], {
-    shell: true, // <- important
     cwd: resolvedRepoDir,
     env: { ...process.env, ...env }
   });
@@ -61,7 +60,6 @@ export function runDockerComposeService({
   }
 
   const container = spawn('docker', composeArgs, {
-    shell: true, // <- important
     cwd: resolvedRepoDir,
     env: { ...process.env, ...env }
   });
