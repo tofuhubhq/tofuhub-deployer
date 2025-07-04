@@ -1,18 +1,19 @@
 #!/bin/bash
 
-TOFUHUB_API_TOKEN_VAR=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbHRuanJyemttYXp2YnJxYmtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3ODk1NzcsImV4cCI6MjA1MjM2NTU3N30.2iz-ErTvlZ_o8rvYfFWWhlbo6RRTE0FWFlk7vQQkETg
+TOFUHUB_API_TOKEN_VAR=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 set -euxo pipefail
 
 export HOME="${HOME:-/root}"
-echo "📦 Starting Tofuhub bootstrap (non-interactive mode)..."
-echo TOFUHUB_API_TOKEN="$TOFUHUB_API_TOKEN_VAR" >> /etc/environment
-export TOFUHUB_API_TOKEN="$TOFUHUB_API_TOKEN_VAR"
-
 export DEBIAN_FRONTEND=noninteractive
 
-echo "🔐 Generating self-signed cert..."
+echo "📦 Starting Tofuhub bootstrap (non-interactive mode)..."
 
+# Save token to a safe env file used by systemd
+echo "TOFUHUB_API_TOKEN=$TOFUHUB_API_TOKEN_VAR" > /etc/tofuhub.env
+chmod 600 /etc/tofuhub.env
+
+echo "🔐 Generating self-signed cert..."
 mkdir -p /etc/tofuhub/certs
 openssl req -x509 -nodes -days 365 \
   -newkey rsa:2048 \
@@ -20,80 +21,81 @@ openssl req -x509 -nodes -days 365 \
   -out /etc/tofuhub/certs/cert.pem \
   -subj "/CN=localhost"
 
-
-### 4. Install Node.js and npm ###
+### Install Node.js and npm
 echo "📦 Installing Node.js and npm..."
-
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 apt-get install -y nodejs
-
-echo "✅ Node.js and npm installed."
 node -v
 npm -v
+echo "✅ Node.js and npm installed."
 
-### 1. Install Docker (via official script) ###
-echo "🐳 Installing Docker from official script..."
-
+### Install Docker
+echo "🐳 Installing Docker..."
 curl -fsSL https://get.docker.com | sh
-
 systemctl enable docker
 systemctl start docker
-
 echo "✅ Docker installed."
 
-### 2. Docker Compose CLI Compatibility ###
-echo "🔧 Ensuring Docker Compose CLI compatibility..."
-
-# Handle edge case where plugin is not linked in $PATH
+### Docker Compose CLI Compatibility
+echo "🔧 Checking Docker Compose..."
 ln -sf /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose || true
-
 docker compose version || docker-compose version
-
 echo "✅ Docker Compose ready."
 
 echo "🔍 Waiting for Docker daemon to be ready..."
-
 until docker info >/dev/null 2>&1; do
   echo "⏳ Docker not ready yet..."
   sleep 1
 done
-
 echo "✅ Docker is ready."
 
-### 5. Clone tofuhub-deployer repo ###
+### Clone and setup deployer
 echo "📥 Cloning Tofuhub Deployer..."
-git clone https://github.com/tofuhubhq/tofuhub-deployer.git
-cd tofuhub-deployer
+git clone https://github.com/tofuhubhq/tofuhub-deployer.git /tofuhub-deployer
+cd /tofuhub-deployer
 
-### 5. Run npm install in current directory ###
-echo "📂 Running npm install in $(pwd)..."
+echo "📂 Installing dependencies..."
 npm install || echo "⚠️ npm install failed"
 
-export PATH=$PATH:/usr/local/bin
-echo "PATH=\"$PATH\"" >> /etc/environment
+### Create systemd unit for Tofuhub Deployer
+echo "🧩 Creating systemd service for Tofuhub Deployer..."
 
-sleep 10
+cat <<EOF > /etc/systemd/system/tofuhub-deployer.service
+[Unit]
+Description=Tofuhub Deployer
+After=network.target docker.service
 
-echo "🚀 Starting Tofuhub Deployer in background..."
-nohup env PATH=$PATH:/usr/local/bin npm run start > /var/log/tofuhub-deployer.log 2>&1 &
+[Service]
+WorkingDirectory=/tofuhub-deployer
+ExecStart=/usr/bin/npm run start
+Restart=always
+EnvironmentFile=/etc/tofuhub.env
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+StandardOutput=append:/var/log/tofuhub-deployer.log
+StandardError=append:/var/log/tofuhub-deployer.log
 
+[Install]
+WantedBy=multi-user.target
+EOF
 
-### 3. Install Ollama ###
+systemctl daemon-reload
+systemctl enable tofuhub-deployer
+systemctl start tofuhub-deployer
+
+echo "🚀 Tofuhub Deployer service started."
+
+### Install Ollama
 echo "🦙 Installing Ollama..."
-
 curl -fsSL https://ollama.com/install.sh | bash || echo "⚠️ Ollama install script may have exited nonzero"
-
 echo "✅ Ollama installed (or attempted)."
 
-### 6. Test Everything ###
+### Verify everything
 echo "🧪 Verifying installation..."
-
 docker --version
 docker compose version || docker-compose version
+ollama --version || echo "⚠️ Ollama version check skipped"
 
-ollama --version || echo "⚠️ Ollama version check skipped (likely needs shell reload)"
-
-### 7. Start Ollama server and load llama3 ###
+### Start Ollama
 echo "🛠️ Starting Ollama server in background..."
 nohup ollama serve > /var/log/ollama.log 2>&1 &
 

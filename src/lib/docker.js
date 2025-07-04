@@ -65,7 +65,7 @@ export function runDockerComposeService({
     composeArgs.push(...command.split(' '));
   }
 
-  const container = spawn('/usr/bin/docker', composeArgs, {
+  const container = spawn('docker', composeArgs, {
     cwd: resolvedRepoDir,
     env: { ...process.env, ...env }
   });
