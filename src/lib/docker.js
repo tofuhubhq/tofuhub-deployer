@@ -129,6 +129,7 @@ ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${
     });
 
     container.on('error', (err) => {
+      console.info(err)
       fs.rmSync(overridePath, { force: true });
       return reject(err);
     });
