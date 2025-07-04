@@ -74,6 +74,8 @@ export function runDockerComposeService({
 version: '3.9'
 services:
   ${serviceName}:
+    environment:
+${Object.entries(env).map(([key, val]) => `      ${key}: "${val}"`).join('\n')}
     network_mode: host
     build:
       context: .
