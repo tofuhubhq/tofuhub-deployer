@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TOFUHUB_API_TOKEN_VAR=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbHRuanJyemttYXp2YnJxYmtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3ODk1NzcsImV4cCI6MjA1MjM2NTU3N30.2iz-ErTvlZ_o8rvYfFWWhlbo6RRTE0FWFlk7vQQkETg
+TOFUHUB_API_TOKEN_VAR=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 set -euxo pipefail
 
@@ -21,28 +21,7 @@ openssl req -x509 -nodes -days 365 \
   -out /etc/tofuhub/certs/cert.pem \
   -subj "/CN=localhost"
 
-### Install Node.js and npm
-echo "📦 Installing Node.js and npm..."
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-apt-get install -y nodejs
-node -v
-npm -v
-echo "✅ Node.js and npm installed."
-
-### Install Docker
-echo "🐳 Installing Docker..."
-curl -fsSL https://get.docker.com | sh
-systemctl enable docker
-systemctl start docker
-echo "✅ Docker installed."
-
-### Docker Compose CLI Compatibility
-echo "🔧 Checking Docker Compose..."
-ln -sf /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose || true
-docker compose version || docker-compose version
-echo "✅ Docker Compose ready."
-
-echo "🔍 Waiting for Docker daemon to be ready..."
+echo "🔍 Verifying Docker is running..."
 until docker info >/dev/null 2>&1; do
   echo "⏳ Docker not ready yet..."
   sleep 1

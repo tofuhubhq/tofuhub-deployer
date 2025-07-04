@@ -75,8 +75,7 @@ version: '3.9'
 services:
   ${serviceName}:
     environment:
-${Object.entries(env).map(([key, val]) => `      ${key}: "${val}"`).join('\n')}
-    network_mode: host
+${Object.entries(env).map(([key, val]) => `      ${key}: "${val}"`).join('\n')}    
     build:
       context: .
       dockerfile: Dockerfile
