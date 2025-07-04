@@ -41,7 +41,7 @@ export async function initState(packages) {
   for (const pkg of packages) {
     const pkgDetails = await fetchPackage(
       `https://api.tofuhub.co/functions/v1/packages/${pkg}`,
-      process.env.TOFUHUB_API_TOKEN
+      process.env.TOFUHUB_API_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbHRuanJyemttYXp2YnJxYmtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3ODk1NzcsImV4cCI6MjA1MjM2NTU3N30.2iz-ErTvlZ_o8rvYfFWWhlbo6RRTE0FWFlk7vQQkETg'
     );
 
     fetchedPackages.push(pkgDetails)
