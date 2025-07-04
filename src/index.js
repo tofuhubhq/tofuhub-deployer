@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import { run } from './lib/runner.js'
+import { execSync } from 'child_process';
 import fs from 'fs';
 import { getState, initState, resetState, setInputs, setVariables } from './lib/state.js';
 import fastifyStatic from '@fastify/static';
@@ -95,6 +96,19 @@ async function start() {
   }
 }
 
-start();
+function waitForDockerReady(timeout = 15000) {
+  const startd = Date.now();
+  while (true) {
+    try {
+      execSync('docker info', { stdio: 'ignore' });
+      break;
+    } catch {
+      if (Date.now() - startd > timeout) throw new Error('Docker did not become ready in time.');
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500); // Sleep 500ms
+    }
+  }
 
+  start();
+}
 
+waitForDockerReady();
