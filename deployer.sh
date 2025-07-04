@@ -51,6 +51,15 @@ docker compose version || docker-compose version
 
 echo "✅ Docker Compose ready."
 
+echo "🔍 Waiting for Docker daemon to be ready..."
+
+until docker info >/dev/null 2>&1; do
+  echo "⏳ Docker not ready yet..."
+  sleep 1
+done
+
+echo "✅ Docker is ready."
+
 ### 5. Clone tofuhub-deployer repo ###
 echo "📥 Cloning Tofuhub Deployer..."
 git clone https://github.com/tofuhubhq/tofuhub-deployer.git
