@@ -9,6 +9,8 @@ export DEBIAN_FRONTEND=noninteractive
 
 echo "📦 Starting Tofuhub bootstrap (non-interactive mode)..."
 
+ufw disable
+
 # Save token to a safe env file used by systemd
 echo "TOFUHUB_API_TOKEN=$TOFUHUB_API_TOKEN_VAR" > /etc/tofuhub.env
 chmod 600 /etc/tofuhub.env
