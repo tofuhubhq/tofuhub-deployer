@@ -79,6 +79,7 @@ ${Object.entries(env).map(([key, val]) => `      ${key}: "${val}"`).join('\n')}
     build:
       context: .
       dockerfile: Dockerfile
+      network: host  # 👈 This makes the build use the host network (like --network=host
     ports:
 ${extraPorts.map(p => `      - "${p}"`).join('\n')}
     volumes:
