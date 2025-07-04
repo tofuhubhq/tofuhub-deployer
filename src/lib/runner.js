@@ -6,7 +6,7 @@ import { execSync, spawn } from "child_process";
 import { createGithubRepoAndPush, getGithubToken } from "./github.js";
 import { sendToClients } from "./ws.js";
 import { fetchPackage } from "./repo.js";
-import { runDockerComposeBuild, runDockerComposeService } from "./docker.js";
+import { runDockerComposeService } from "./docker.js";
 
 // function runDockerBuild(stepName, path) {
 //   return new Promise((resolve, reject) => {
