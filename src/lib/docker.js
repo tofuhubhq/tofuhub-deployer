@@ -4,7 +4,7 @@ import { spawn } from "child_process";
 import { sendToClients } from './ws.js';
 
 export function runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env) {
-  const build = spawn('docker', [
+  const build = spawn('/usr/bin/docker', [
     'compose',
     '-f', 'docker-compose.yml',
     '-f', overridePath,
@@ -59,7 +59,7 @@ export function runDockerComposeService({
     composeArgs.push(...command.split(' '));
   }
 
-  const container = spawn('docker', composeArgs, {
+  const container = spawn('/usr/bin/docker', composeArgs, {
     cwd: resolvedRepoDir,
     env: { ...process.env, ...env }
   });

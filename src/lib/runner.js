@@ -10,7 +10,7 @@ import { runDockerComposeBuild, runDockerComposeService } from "./docker.js";
 
 function runDockerBuild(stepName, path) {
   return new Promise((resolve, reject) => {
-    const dockerBuild = spawn('docker', ['build', '--network', 'host', '-t', `tofuhub-${stepName}`, '.'], {
+    const dockerBuild = spawn('/usr/bin/docker', ['build', '--network', 'host', '-t', `tofuhub-${stepName}`, '.'], {
       cwd: path,
     });
 
