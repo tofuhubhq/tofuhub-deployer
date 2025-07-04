@@ -60,8 +60,11 @@ cd tofuhub-deployer
 echo "📂 Running npm install in $(pwd)..."
 npm install || echo "⚠️ npm install failed"
 
+export PATH=$PATH:/usr/local/bin
+echo "PATH=\"$PATH\"" >> /etc/environment
+
 echo "🚀 Starting Tofuhub Deployer in background..."
-nohup npm run start > /var/log/tofuhub-deployer.log 2>&1 &
+nohup env PATH=$PATH:/usr/local/bin npm run start > /var/log/tofuhub-deployer.log 2>&1 &
 
 
 ### 3. Install Ollama ###
