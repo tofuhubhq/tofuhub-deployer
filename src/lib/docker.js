@@ -92,7 +92,6 @@ ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${
     '-f', 'docker-compose.yml',
     '-f', overridePath,
     'up',
-    ...Object.keys(env).flatMap(key => ['-e', key]),
     ...extraPorts.flatMap(port => ['-p', port]),
     serviceName
   ];
