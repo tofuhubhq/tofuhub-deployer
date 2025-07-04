@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { spawn } from "child_process";
 import { sendToClients } from './ws.js';
+import os from 'os';
 
 // export function runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env) {
 //   spawn('docker', [
