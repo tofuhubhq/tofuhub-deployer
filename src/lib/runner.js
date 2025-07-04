@@ -72,6 +72,7 @@ async function processStep(stepWithDetails) {
   console.log(`📥 Cloning ${repoUrl} to ${repoDir}`);
   execSync(`git clone ${repoUrl} ${repoDir}`, { stdio: 'inherit' });
 
+  return;
   const githubToken = await getGithubToken(); // new line
   let renamedRepoDir = repoDir;
   
@@ -130,6 +131,7 @@ async function processStep(stepWithDetails) {
 
   await runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env);
 
+  return;
   console.log(`🚀 Running container for ${name}`);
   return runDockerComposeService({
     resolvedRepoDir,
