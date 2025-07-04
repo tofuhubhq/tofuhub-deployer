@@ -28,6 +28,14 @@ until docker info >/dev/null 2>&1; do
 done
 echo "✅ Docker is ready."
 
+### Install Node.js and npm
+echo "📦 Installing Node.js and npm..."
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt-get install -y nodejs
+node -v
+npm -v
+echo "✅ Node.js and npm installed."
+
 ### Clone and setup deployer
 echo "📥 Cloning Tofuhub Deployer..."
 git clone https://github.com/tofuhubhq/tofuhub-deployer.git /tofuhub-deployer
