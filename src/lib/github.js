@@ -97,6 +97,7 @@ export async function createGithubRepoAndPush(repoDir, baseName, githubToken, or
   const repoData = JSON.stringify({ name, private: true });
   const pathToCreate = org ? `/orgs/${org}/repos` : '/user/repos';
 
+  console.info(`Github token ${githubToken}`)
   // ✅ Wrap the request in a Promise
   return new Promise((resolve, reject) => {
     const req = https.request({
