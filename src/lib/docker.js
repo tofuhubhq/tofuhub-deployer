@@ -4,7 +4,12 @@ import { spawn } from "child_process";
 import { sendToClients } from './ws.js';
 
 export function runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env) {
-  spawn('docker', 'info');
+  spawn('docker', [
+    'compose',
+    '-f', 'docker-compose.yml',
+    'build',
+    'test-service'
+  ]);
 
   console.info(`did not crash`)
   return;
