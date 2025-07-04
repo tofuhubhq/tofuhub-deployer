@@ -100,7 +100,7 @@ function waitForDockerReady(timeout = 15000) {
   const startd = Date.now();
   while (true) {
     try {
-      execSync('docker info', { stdio: 'ignore' });
+      execSync('docker compose version', { stdio: 'inherit' });
       break;
     } catch {
       if (Date.now() - startd > timeout) throw new Error('Docker did not become ready in time.');
