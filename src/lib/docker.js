@@ -80,6 +80,8 @@ ${Object.entries(env).map(([key, val]) => `      ${key}: "${val}"`).join('\n')}
     build:
       context: .
       dockerfile: Dockerfile
+    ports:
+${extraPorts.map(p => `      - "${p}"`).join('\n')}
     volumes:
 ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${container}"`).join('\n')}
 `;
@@ -92,7 +94,6 @@ ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${
     '-f', 'docker-compose.yml',
     '-f', overridePath,
     'up',
-    ...extraPorts.flatMap(port => ['-p', port]),
     serviceName
   ];
 
