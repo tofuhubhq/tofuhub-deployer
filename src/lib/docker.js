@@ -105,14 +105,17 @@ ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${
   });
 
   container.stdout.on('data', (data) => {
+    console.info(data.toString())
     sendToClients(data.toString());
   });
 
   container.stderr.on('data', (data) => {
+    console.info(data.toString())
     sendToClients(data.toString());
   });
 
   container.on('close', (code) => {
+    console.info(code)
     sendToClients(`[container exited with code ${code}]\n`);
   });
 
