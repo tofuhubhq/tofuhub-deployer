@@ -3,68 +3,92 @@ import fs from 'fs';
 import { spawn } from "child_process";
 import { sendToClients } from './ws.js';
 
-export function runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env) {
-  spawn('docker', [
-    'compose',
-    '-f', 'docker-compose.yml',
-    'build',
-    'test-service'
-  ]);
+// export function runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env) {
+//   spawn('docker', [
+//     'compose',
+//     '-f', 'docker-compose.yml',
+//     'build',
+//     'test-service'
+//   ]);
 
-  console.info(`did not crash`)
-  return;
-  const args = [
-    'compose',
-    '-f', 'docker-compose.yml',
-    '-f', overridePath,
-    'build',
-    serviceName
-  ]
-  console.info(args)
-  console.log('🚧 Checking environment before spawn:');
-  console.log('cwd:', resolvedRepoDir);
-  console.log('docker exists:', fs.existsSync('/usr/bin/docker'));
-  console.log('PATH:', process.env.PATH);
-  const build = spawn('docker', args, {
-    cwd: resolvedRepoDir,
-    env: { ...process.env, ...env }
-  });
+//   console.info(`did not crash`)
+//   return;
+//   const args = [
+//     'compose',
+//     '-f', 'docker-compose.yml',
+//     '-f', overridePath,
+//     'build',
+//     serviceName
+//   ]
+//   console.info(args)
+//   console.log('🚧 Checking environment before spawn:');
+//   console.log('cwd:', resolvedRepoDir);
+//   console.log('docker exists:', fs.existsSync('/usr/bin/docker'));
+//   console.log('PATH:', process.env.PATH);
+//   const build = spawn('docker', args, {
+//     cwd: resolvedRepoDir,
+//     env: { ...process.env, ...env }
+//   });
 
-  build.stdout.on('data', (data) => {
-    sendToClients(data.toString());
-  });
+//   build.stdout.on('data', (data) => {
+//     sendToClients(data.toString());
+//   });
 
-  build.stderr.on('data', (data) => {
-    sendToClients(data.toString());
-  });
+//   build.stderr.on('data', (data) => {
+//     sendToClients(data.toString());
+//   });
 
-  build.on('close', (code) => {
-    if (code === 0) {
-      resolve();
-    } else {
-      reject(new Error(`docker compose build failed with code ${code}`));
-    }
-  });
+//   build.on('close', (code) => {
+//     if (code === 0) {
+//       resolve();
+//     } else {
+//       reject(new Error(`docker compose build failed with code ${code}`));
+//     }
+//   });
 
-  build.on('error', reject);
-}
+//   build.on('error', reject);
+// }
 
 export function runDockerComposeService({
-  resolvedRepoDir,
+  repoDir,
   serviceName = 'tofuhub-worker',
   env = {},                       // key-value map
   command = null,                 // command override (e.g. 'node src/index.js')
-  extraPorts = ["6080:6080"],                 // [ "6080:6080", "3000:3000", ... ]
-  overridePath
+  extraVolumes = [],              // [ [local, container], ... ]
+  extraPorts = ["6080:6080"]                 // [ "6080:6080", "3000:3000", ... ]
 }) {
+
+  const resolvedRepoDir = path.resolve(repoDir);
+  const overridePath = path.join(os.tmpdir(), 'tofuhub.override.yml');
+
+  // === Generate override file for volumes ===
+  const volumeMappings = [
+    [os.homedir() + '/.ssh', '/root/.ssh:ro'],
+    [resolvedRepoDir, '/repo'],
+    ['/var/run/docker.sock', '/var/run/docker.sock'],
+    ...extraVolumes
+  ];
+
+  const overrideYml = `
+version: '3.9'
+services:
+  ${serviceName}:
+    network_mode: host
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${container}"`).join('\n')}
+`;
+
+  fs.writeFileSync(overridePath, overrideYml);
 
   // === Build docker compose run command ===
   const composeArgs = [
     'compose',
     '-f', 'docker-compose.yml',
     '-f', overridePath,
-    'run',
-    // '--rm',
+    'up',
     ...Object.keys(env).flatMap(key => ['-e', key]),
     ...extraPorts.flatMap(port => ['-p', port]),
     serviceName
@@ -80,23 +104,20 @@ export function runDockerComposeService({
   });
 
   container.stdout.on('data', (data) => {
-    console.info(data)
     sendToClients(data.toString());
   });
 
   container.stderr.on('data', (data) => {
-    console.info(data)
     sendToClients(data.toString());
   });
 
   container.on('close', (code) => {
-    console.info(code)
     sendToClients(`[container exited with code ${code}]\n`);
   });
 
   return new Promise((resolve, reject) => {
     container.on('exit', (code) => {
-      console.info(`exiting`, code)
+
       fs.rmSync(overridePath, { force: true });
       if (code !== 0) {
         console.info(code)
@@ -107,7 +128,6 @@ export function runDockerComposeService({
     });
 
     container.on('error', (err) => {
-      console.info(err)
       fs.rmSync(overridePath, { force: true });
       return reject(err);
     });
