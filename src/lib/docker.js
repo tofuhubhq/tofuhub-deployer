@@ -4,13 +4,19 @@ import { spawn } from "child_process";
 import { sendToClients } from './ws.js';
 
 export function runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env) {
-  const build = spawn('/usr/bin/docker', [
+  const args = [
     'compose',
     '-f', 'docker-compose.yml',
     '-f', overridePath,
     'build',
     serviceName
-  ], {
+  ]
+  console.info(args)
+  console.log('🚧 Checking environment before spawn:');
+  console.log('cwd:', resolvedRepoDir);
+  console.log('docker exists:', fs.existsSync('/usr/bin/docker'));
+  console.log('PATH:', process.env.PATH);
+  const build = spawn('docker', args, {
     cwd: resolvedRepoDir,
     env: { ...process.env, ...env }
   });
