@@ -54,7 +54,7 @@ async function processStep(stepWithDetails) {
 
   const pkgDetails = await fetchPackage(
     `https://api.tofuhub.co/functions/v1/packages/${packageName}`,
-    process.env.TOFUHUB_API_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbHRuanJyemttYXp2YnJxYmtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3ODk1NzcsImV4cCI6MjA1MjM2NTU3N30.2iz-ErTvlZ_o8rvYfFWWhlbo6RRTE0FWFlk7vQQkETg'
+    process.env.TOFUHUB_API_TOKEN
   );
   
   console.info(pkgDetails)
