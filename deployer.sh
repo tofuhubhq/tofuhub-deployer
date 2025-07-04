@@ -72,6 +72,8 @@ npm install || echo "⚠️ npm install failed"
 export PATH=$PATH:/usr/local/bin
 echo "PATH=\"$PATH\"" >> /etc/environment
 
+sleep 10
+
 echo "🚀 Starting Tofuhub Deployer in background..."
 nohup env PATH=$PATH:/usr/local/bin npm run start > /var/log/tofuhub-deployer.log 2>&1 &
 
