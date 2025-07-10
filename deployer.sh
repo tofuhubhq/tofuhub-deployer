@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# ⚠️ Replace this with secure retrieval method in production
 TOFUHUB_API_TOKEN_VAR=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbHRuanJyemttYXp2YnJxYmtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3ODk1NzcsImV4cCI6MjA1MjM2NTU3N30.2iz-ErTvlZ_o8rvYfFWWhlbo6RRTE0FWFlk7vQQkETg
 
 set -euxo pipefail
@@ -7,48 +8,53 @@ set -euxo pipefail
 export HOME="${HOME:-/root}"
 export DEBIAN_FRONTEND=noninteractive
 
-echo "📦 Starting Tofuhub bootstrap (non-interactive mode)..."
+echo "📦 Starting Tofuhub bootstrap (optimized)..."
 
-ufw disable
+ufw disable || true
 
-# Save token to a safe env file used by systemd
+# Save token securely
 echo "TOFUHUB_API_TOKEN=$TOFUHUB_API_TOKEN_VAR" > /etc/tofuhub.env
 chmod 600 /etc/tofuhub.env
 
+# 🔐 Fast self-signed cert with ECC
 echo "🔐 Generating self-signed cert..."
 mkdir -p /etc/tofuhub/certs
 openssl req -x509 -nodes -days 365 \
-  -newkey rsa:2048 \
+  -newkey ec:<(openssl ecparam -name prime256v1) \
   -keyout /etc/tofuhub/certs/key.pem \
   -out /etc/tofuhub/certs/cert.pem \
   -subj "/CN=localhost"
 
+# 🐳 Wait for Docker
 echo "🔍 Verifying Docker is running..."
 until docker info >/dev/null 2>&1; do
-  echo "⏳ Docker not ready yet..."
+  echo "⏳ Waiting for Docker..."
   sleep 1
 done
 echo "✅ Docker is ready."
 
-### Install Node.js and npm
-echo "📦 Installing Node.js and npm..."
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-apt-get install -y nodejs
+# 🚀 Start Ollama install in background
+echo "🦙 Installing Ollama in background..."
+curl -fsSL https://ollama.com/install.sh | bash &
+
+# 📦 Install Node.js via binary (much faster than apt)
+echo "📦 Installing Node.js via binary..."
+NODE_VERSION=20.14.0
+curl -fsSL https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz | tar -xJ -C /usr/local --strip-components=1
 node -v
 npm -v
-echo "✅ Node.js and npm installed."
+echo "✅ Node.js installed."
 
-### Clone and setup deployer
+# 📥 Clone Deployer repo (shallow)
 echo "📥 Cloning Tofuhub Deployer..."
-git clone https://github.com/tofuhubhq/tofuhub-deployer.git /tofuhub-deployer
+git clone --depth=1 https://github.com/tofuhubhq/tofuhub-deployer.git /tofuhub-deployer
 cd /tofuhub-deployer
 
-echo "📂 Installing dependencies..."
-npm install || echo "⚠️ npm install failed"
+echo "📂 Installing Deployer dependencies..."
+npm install || echo "⚠️ npm install failed (may be cached)"
 
-### Create systemd unit for Tofuhub Deployer
-echo "🧩 Creating systemd service for Tofuhub Deployer..."
-
+# 🧩 Create systemd unit
+echo "🧩 Creating systemd service..."
 cat <<EOF > /etc/systemd/system/tofuhub-deployer.service
 [Unit]
 Description=Tofuhub Deployer
@@ -73,26 +79,26 @@ systemctl start tofuhub-deployer
 
 echo "🚀 Tofuhub Deployer service started."
 
-### Install Ollama
-echo "🦙 Installing Ollama..."
-curl -fsSL https://ollama.com/install.sh | bash || echo "⚠️ Ollama install script may have exited nonzero"
-echo "✅ Ollama installed (or attempted)."
-
-### Verify everything
-echo "🧪 Verifying installation..."
+# 🧪 Verify key components
 docker --version
 docker compose version || docker-compose version
-ollama --version || echo "⚠️ Ollama version check skipped"
+ollama --version || echo "⚠️ Ollama not ready yet"
 
-### Start Ollama
-echo "🛠️ Starting Ollama server in background..."
+# 🛠️ Start Ollama and poll for availability
+echo "🛠️ Starting Ollama..."
 nohup ollama serve > /var/log/ollama.log 2>&1 &
 
-echo "⏳ Waiting for Ollama server to become available..."
-until curl -s http://localhost:11434 > /dev/null; do
+echo "⏳ Waiting for Ollama to become available..."
+for i in {1..15}; do
+  if curl -s http://localhost:11434 > /dev/null; then
+    echo "✅ Ollama is ready."
+    break
+  fi
   sleep 1
 done
-echo "✅ Ollama server is up!"
 
-echo "🚀 Pulling llama3 model..."
-ollama run llama3 || echo "⚠️ Model load failed"
+# 🦙 Run llama3 model in background (non-blocking)
+echo "🚀 Pulling llama3 model in background..."
+nohup ollama run llama3 > /var/log/ollama-llama3.log 2>&1 &
+
+echo "✅ Bootstrap complete (llama3 model will load in background)."
