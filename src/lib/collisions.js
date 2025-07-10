@@ -282,17 +282,17 @@ export async function check(inputs) {
   for (const [key, value] of Object.entries(inputs)) {
     const inputDef = schemaInputs[key];
 
-    
-    if (!inputDef) continue;
+    if (!inputDef) {
+      results[key] = { exists: false };
+      continue;
+    }
 
     const { provider, primitive } = inputDef;
     
-    if (provider !== "digitalocean") {
+    if (provider !== "digitalocean" || !PRIMARY_PRIMITIVES.includes(primitive)) {
+      results[key] = { exists: false };
       continue; // unsupported provider
     }
-
-    // If the primitive does not need to be unique, then skip
-    if (!PRIMARY_PRIMITIVES.includes(primitive)) continue;
 
     const checkerFn = checkerMap[primitive];
     if (!checkerFn) {
