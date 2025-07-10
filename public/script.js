@@ -93,6 +93,18 @@ document.getElementById('deploy-btn').addEventListener('click', async (e) => {
   // handle response...
 });
 
+document.getElementById('collision-check-btn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const inputs = getFormValues();
+  const res = await fetch('/collisions/check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(inputs)
+  });
+
+  // handle response...
+});
+
 // Initial fetch and poll every 2 seconds
 setupLogStream()
 fetchState();

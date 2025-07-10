@@ -6,6 +6,12 @@ import { getState, initState, resetState, setInputs, setVariables } from './lib/
 import fastifyStatic from '@fastify/static';
 import websocket from '@fastify/websocket';
 import * as dotenv from 'dotenv';
+import { resolve } from 'path';
+
+import { rm } from 'fs/promises';
+import { logClients } from './lib/ws.js';
+import { setGithubToken } from './lib/github.js';
+import { check } from './lib/collisions.js';
 
 dotenv.config();
 
@@ -23,11 +29,6 @@ const fastify = Fastify({
     }
   })
 });
-import { resolve } from 'path';
-
-import { rm } from 'fs/promises';
-import { logClients } from './lib/ws.js';
-import { setGithubToken } from './lib/github.js';
 
 // Serve static files from the "public" folder
 fastify.register(fastifyStatic, {
@@ -77,6 +78,11 @@ fastify.post('/auth/github', async (request) => {
   return {
     "github_token": res
   }
+});
+
+// POST /collisions/check checks for collisions
+fastify.post('/collisions/check', async (request) => {
+  return check(request.body);
 });
 
 async function start() {
