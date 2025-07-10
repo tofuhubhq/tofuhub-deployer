@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# ⚠️ Replace this with secure retrieval method in production
 TOFUHUB_API_TOKEN_VAR=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbHRuanJyemttYXp2YnJxYmtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3ODk1NzcsImV4cCI6MjA1MjM2NTU3N30.2iz-ErTvlZ_o8rvYfFWWhlbo6RRTE0FWFlk7vQQkETg
 
 set -euxo pipefail
@@ -8,53 +7,48 @@ set -euxo pipefail
 export HOME="${HOME:-/root}"
 export DEBIAN_FRONTEND=noninteractive
 
-echo "📦 Starting Tofuhub bootstrap (optimized)..."
+echo "📦 Starting Tofuhub bootstrap (non-interactive mode)..."
 
-ufw disable || true
+ufw disable
 
-# Save token securely
+# Save token to a safe env file used by systemd
 echo "TOFUHUB_API_TOKEN=$TOFUHUB_API_TOKEN_VAR" > /etc/tofuhub.env
 chmod 600 /etc/tofuhub.env
 
-# 🔐 Fast self-signed cert with ECC
 echo "🔐 Generating self-signed cert..."
 mkdir -p /etc/tofuhub/certs
 openssl req -x509 -nodes -days 365 \
-  -newkey ec:<(openssl ecparam -name prime256v1) \
+  -newkey rsa:2048 \
   -keyout /etc/tofuhub/certs/key.pem \
   -out /etc/tofuhub/certs/cert.pem \
   -subj "/CN=localhost"
 
-# 🐳 Wait for Docker
 echo "🔍 Verifying Docker is running..."
 until docker info >/dev/null 2>&1; do
-  echo "⏳ Waiting for Docker..."
+  echo "⏳ Docker not ready yet..."
   sleep 1
 done
 echo "✅ Docker is ready."
 
-# 🚀 Start Ollama install in background
-echo "🦙 Installing Ollama in background..."
-curl -fsSL https://ollama.com/install.sh | bash &
-
-# 📦 Install Node.js via binary (much faster than apt)
-echo "📦 Installing Node.js via binary..."
-NODE_VERSION=20.14.0
-curl -fsSL https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz | tar -xJ -C /usr/local --strip-components=1
+### Install Node.js and npm
+echo "📦 Installing Node.js and npm..."
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt-get install -y nodejs
 node -v
 npm -v
-echo "✅ Node.js installed."
+echo "✅ Node.js and npm installed."
 
-# 📥 Clone Deployer repo (shallow)
+### Clone and setup deployer
 echo "📥 Cloning Tofuhub Deployer..."
-git clone --depth=1 https://github.com/tofuhubhq/tofuhub-deployer.git /tofuhub-deployer
+git clone https://github.com/tofuhubhq/tofuhub-deployer.git /tofuhub-deployer
 cd /tofuhub-deployer
 
-echo "📂 Installing Deployer dependencies..."
-npm install || echo "⚠️ npm install failed (may be cached)"
+echo "📂 Installing dependencies..."
+npm install || echo "⚠️ npm install failed"
 
-# 🧩 Create systemd unit
-echo "🧩 Creating systemd service..."
+### Create systemd unit for Tofuhub Deployer
+echo "🧩 Creating systemd service for Tofuhub Deployer..."
+
 cat <<EOF > /etc/systemd/system/tofuhub-deployer.service
 [Unit]
 Description=Tofuhub Deployer
@@ -79,26 +73,26 @@ systemctl start tofuhub-deployer
 
 echo "🚀 Tofuhub Deployer service started."
 
-# 🧪 Verify key components
+### Install Ollama
+echo "🦙 Installing Ollama..."
+curl -fsSL https://ollama.com/install.sh | bash || echo "⚠️ Ollama install script may have exited nonzero"
+echo "✅ Ollama installed (or attempted)."
+
+### Verify everything
+echo "🧪 Verifying installation..."
 docker --version
 docker compose version || docker-compose version
-ollama --version || echo "⚠️ Ollama not ready yet"
+ollama --version || echo "⚠️ Ollama version check skipped"
 
-# 🛠️ Start Ollama and poll for availability
-echo "🛠️ Starting Ollama..."
+### Start Ollama
+echo "🛠️ Starting Ollama server in background..."
 nohup ollama serve > /var/log/ollama.log 2>&1 &
 
-echo "⏳ Waiting for Ollama to become available..."
-for i in {1..15}; do
-  if curl -s http://localhost:11434 > /dev/null; then
-    echo "✅ Ollama is ready."
-    break
-  fi
+echo "⏳ Waiting for Ollama server to become available..."
+until curl -s http://localhost:11434 > /dev/null; do
   sleep 1
 done
+echo "✅ Ollama server is up!"
 
-# 🦙 Run llama3 model in background (non-blocking)
-echo "🚀 Pulling llama3 model in background..."
-nohup ollama run llama3 > /var/log/ollama-llama3.log 2>&1 &
-
-echo "✅ Bootstrap complete (llama3 model will load in background)."
+echo "🚀 Pulling llama3 model..."
+ollama run llama3 || echo "⚠️ Model load failed"
