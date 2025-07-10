@@ -50,7 +50,7 @@ export async function checkDatabaseClusterExists(name, token) {
     headers: { Authorization: `Bearer ${token}` },
   });
   const data = await res.json();
-  return data.databases.some((db) => db.name === name);
+  return data.databases?.some((db) => db.name === name);
 }
 
 export async function checkAppNameExists(name, token) {

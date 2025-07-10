@@ -1,31 +1,51 @@
 import {
   checkDropletNameExists,
-  checkProjectNameExists
-  // checkVolumeNameExists,
-  // checkDomainExists,
-  // checkDNSRecordExists,
-  // checkDatabaseClusterExists,
-  // checkAppNameExists,
-  // checkFirewallNameExists,
-  // checkLoadBalancerNameExists,
-  // checkVPCNameExists
+  checkProjectNameExists,
+  checkVolumeNameExists,
+  checkDomainExists,
+  checkDNSRecordExists,
+  checkDatabaseClusterExists,
+  checkAppNameExists,
+  checkFirewallNameExists,
+  checkLoadBalancerNameExists,
+  checkVPCNameExists
 } from "./digitalocean.js";
 
 import fs from "fs";
 import path from "path";
 
+const PRIMITIVES = [
+  "domain",
+  "access_token",
+  "project",
+  "project_description",
+  "vpc",
+  "region",
+  "database",
+  "database_engine",
+  "database_version",
+  "size",
+  "count",
+  "image",
+  "username",
+  "password",
+  "file_path",
+  "ssh_key_name"
+];
+
+const PRIMARY_PRIMITIVES = PRIMITIVES.filter(prim => ['project', 'droplet', 'vpc', 'domain', 'database'].includes(prim))
 
 const checkerMap = {
   droplet: checkDropletNameExists,
   project: checkProjectNameExists,
-  // volume: checkVolumeNameExists,
-  // dns_zone: checkDomainExists,
-  // dns_record: checkDNSRecordExists,
-  // database: checkDatabaseClusterExists,
-  // app: checkAppNameExists,
-  // firewall: checkFirewallNameExists,
-  // load_balancer: checkLoadBalancerNameExists,
-  // vpc: checkVPCNameExists,
+  volume: checkVolumeNameExists,
+  domain: checkDomainExists,
+  dns_record: checkDNSRecordExists,
+  database: checkDatabaseClusterExists,
+  app: checkAppNameExists,
+  firewall: checkFirewallNameExists,
+  load_balancer: checkLoadBalancerNameExists,
+  vpc: checkVPCNameExists,
 };
 
 export async function check(inputs) {
@@ -47,7 +67,7 @@ export async function check(inputs) {
         "required": false,
         "default": "",
         "description": "Digital ocean domain",
-        "primitive": "dns_zone",
+        "primitive": "domain",
         "provider": "digitalocean"
       },
       "do_access_token": {
@@ -73,6 +93,13 @@ export async function check(inputs) {
         "default": "",
         "description": "Digital ocean project description",
         "primitive": "project_description",
+        "provider": "digitalocean"
+      },
+      "do_vpc": {
+        "type": "string",
+        "required": true,
+        "description": "Digital ocean vpc region",
+        "primitive": "vpc",
         "provider": "digitalocean"
       },
       "do_vpc_region": {
@@ -239,7 +266,13 @@ export async function check(inputs) {
   
   const schemaInputs = config.inputs || {};
 
-  const token = inputs.do_access_token;
+  const found = Object.entries(schemaInputs).find(([key, value]) => value.primitive === 'access_token' && value.provider === 'digitalocean')
+
+  if (!found.length) return;
+  
+  const token = inputs[found[0]] 
+
+  // const token = inputs.do_access_token;
   if (!token) {
     throw new Error("Missing 'do_access_token' in inputs");
   }
@@ -257,6 +290,9 @@ export async function check(inputs) {
     if (provider !== "digitalocean") {
       continue; // unsupported provider
     }
+
+    // If the primitive does not need to be unique, then skip
+    if (!PRIMARY_PRIMITIVES.includes(primitive)) continue;
 
     const checkerFn = checkerMap[primitive];
     if (!checkerFn) {
