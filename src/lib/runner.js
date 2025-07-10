@@ -71,6 +71,9 @@ async function processStep(stepWithDetails) {
   console.log(`📥 Cloning ${repoUrl} to ${repoDir}`);
   execSync(`git clone ${repoUrl} ${repoDir}`, { stdio: 'inherit' });
 
+  // TODO: add collision checking also before it runs
+  // await checkCollisions();
+
   const githubToken = await getGithubToken(); // new line
   let renamedRepoDir = repoDir;
   

@@ -11,7 +11,7 @@ import { resolve } from 'path';
 import { rm } from 'fs/promises';
 import { logClients } from './lib/ws.js';
 import { setGithubToken } from './lib/github.js';
-import { check } from './lib/collisions.js';
+import { checkCollisions } from './lib/collisions.js';
 
 dotenv.config();
 
@@ -82,7 +82,7 @@ fastify.post('/auth/github', async (request) => {
 
 // POST /collisions/check checks for collisions
 fastify.post('/collisions/check', async (request) => {
-  return check(request.body);
+  return checkCollisions(request.body);
 });
 
 async function start() {

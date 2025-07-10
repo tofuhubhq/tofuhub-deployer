@@ -48,7 +48,7 @@ const checkerMap = {
   vpc: checkVPCNameExists,
 };
 
-export async function check(inputs) {
+export async function checkCollisions(inputs) {
   // const config = JSON.parse(fs.readFileSync(TOFUHUB_CONFIG_PATH, "utf-8"));
   const config = {
     "name": "lorawan-postgres-redis-mosquitto-do",
