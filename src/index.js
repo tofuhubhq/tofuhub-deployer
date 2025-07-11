@@ -12,6 +12,7 @@ import { rm } from 'fs/promises';
 import { logClients } from './lib/ws.js';
 import { setGithubToken } from './lib/github.js';
 import { checkCollisions } from './lib/collisions.js';
+import { destroyDroplet } from './lib/digitalocean.js';
 
 dotenv.config();
 
@@ -78,6 +79,11 @@ fastify.post('/auth/github', async (request) => {
   return {
     "github_token": res
   }
+});
+
+// POST /destroy
+fastify.post('/destroy', async (request, reply) => {
+  return destroyDroplet()
 });
 
 // POST /collisions/check checks for collisions
