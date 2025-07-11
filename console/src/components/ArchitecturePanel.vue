@@ -64,7 +64,7 @@ async function layoutGraph(direction) {
 
       <Background />
 
-      <Panel class="process-panel" position="top-right">
+      <!-- <Panel class="process-panel" position="top-right">
         <div class="layout-panel">
           <button v-if="isRunning" class="stop-btn" title="stop" @click="stop">
             <Icon name="stop" />
@@ -87,7 +87,7 @@ async function layoutGraph(direction) {
           <label>Cancel on error</label>
           <input v-model="cancelOnError" type="checkbox" />
         </div>
-      </Panel>
+      </Panel> -->
     </VueFlow>
   </div>
 </template>
@@ -107,7 +107,7 @@ async function layoutGraph(direction) {
 
 .process-panel {
   background-color: #2d3748;
-  padding: 10px;
+  /* padding: 10px; */
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   display: flex;
