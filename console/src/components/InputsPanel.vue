@@ -17,7 +17,7 @@ onMounted(async () => {
   //     steps: [{ name: packageName, package: packageName, type: 'PACKAGE' }],
   //   }),
   // })
-  const data = {variables:[]}
+  const data = {variables: []}
 
   // const data = await res.json()
   variables.value = data.variables
