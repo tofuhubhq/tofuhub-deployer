@@ -1,29 +1,46 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import Navbar from './components/Navbar.vue';
-import ArchitecturePanel from './components/ArchitecturePanel.vue';
-import LogsPanel from './components/LogsPanel.vue';
-import DeployPanel from './components/DeployPanel.vue';
-import Sidebar from './components/Sidebar.vue';
-import InputsPanel from './components/InputsPanel.vue';
+import 'splitpanes/dist/splitpanes.css'
+import { Splitpanes, Pane } from 'splitpanes'
 
-const activeTab = ref('Inputs')
+import Navbar from './components/Navbar.vue'
+import DeployPanel from './components/DeployPanel.vue'
+import ArchitecturePanel from './components/ArchitecturePanel.vue'
+import LogsPanel from './components/LogsPanel.vue'
+import InputsPanel from './components/InputsPanel.vue'
 </script>
 
 <template>
   <div class="app-container">
     <Navbar />
 
-    <div class="main-body">
-      <Sidebar :activeTab="activeTab" @updateTab="activeTab = $event" />
-      
-      <div class="content">
-        <InputsPanel v-if="activeTab === 'Inputs'" />
-        <DeployPanel v-if="activeTab === 'Deploy'" />
-        <LogsPanel v-if="activeTab === 'Logs'" />
-        <ArchitecturePanel v-if="activeTab === 'Architecture'" />
-      </div>
-    </div>
+    <!-- Outer vertical split: Left (inputs + arch) | Right (logs) -->
+    <Splitpanes class="main-body" horizontal>
+      <!-- LEFT column -->
+      <Pane min-size="20">
+        <Splitpanes>
+          <!-- Inputs (top row) -->
+          <Pane min-size="20">
+            <div class="panel inputs">
+              <InputsPanel />
+            </div>
+          </Pane>
+
+          <!-- Architecture (bottom row) -->
+          <Pane min-size="20">
+            <div class="panel architecture">
+              <ArchitecturePanel />
+            </div>
+          </Pane>
+        </Splitpanes>
+      </Pane>
+
+      <!-- RIGHT column: Logs -->
+      <Pane min-size="20">
+        <div class="panel logs">
+          <LogsPanel />
+        </div>
+      </Pane>
+    </Splitpanes>
   </div>
 </template>
 
@@ -34,15 +51,30 @@ const activeTab = ref('Inputs')
   height: 100vh;
 }
 
+/* This fills remaining space below the navbar */
 .main-body {
-  display: flex;
   flex: 1;
-  overflow: hidden;
+  height: 100%;
 }
 
-.content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
+/* Optional panel styling */
+.panel {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  /* padding: 16px; */
+}
+
+.inputs {
+  background-color: #ffffff;
+}
+
+.architecture {
+  background-color: #0d0d18;
+}
+
+.logs {
+  background-color: #0d0d0d;
+  color: #ccc;
 }
 </style>
