@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import fs from 'fs';
 import { execSync, spawn } from "child_process";
-import { createGithubRepoAndPush, getGithubToken } from "./github.js";
+// import { createGithubRepoAndPush, getGithubToken } from "./github.js";
 import { sendToClients } from "./ws.js";
 import { fetchPackage } from "./repo.js";
 import { runDockerComposeService } from "./docker.js";
@@ -74,21 +74,20 @@ async function processStep(stepWithDetails) {
   // TODO: add collision checking also before it runs
   // await checkCollisions();
 
-  const githubToken = await getGithubToken(); // new line
+  // const githubToken = await getGithubToken(); // new line
   let renamedRepoDir = repoDir;
   
-  console.info(process.env)
-  console.info(githubToken)
+  // console.info(process.env)
+  // console.info(githubToken)
   // We only make a copy of the package and push it to the
   // user's repo if it's a deploy package.
-  if (packageType === 'PACKAGE') {
-    console.log(`🔄 Creating/pushing to user GitHub repo for ${name}`);
-    console.log(`🔄 Preparing to push to user's GitHub...`);
-  
+  // if (packageType === 'PACKAGE') {
+    // console.log(`🔄 Creating/pushing to user GitHub repo for ${name}`);
+    // console.log(`🔄 Preparing to push to user's GitHub...`);
     // Push a copy of the repo to the personal/org account of the user
-    const { repoUrl: userRepoUrl, repoDir: pushedRenamedRepoDir } = await createGithubRepoAndPush(repoDir, name, githubToken, org); // updated call
-    renamedRepoDir = pushedRenamedRepoDir;
-  }
+    // const { repoUrl: userRepoUrl, repoDir: pushedRenamedRepoDir } = await createGithubRepoAndPush(repoDir, name, githubToken, org); // updated call
+    // renamedRepoDir = pushedRenamedRepoDir;
+  // }
   
   // Read the Dockerfile and build an image with it
   const dockerfilePath = path.join(renamedRepoDir, 'Dockerfile'); 
@@ -125,16 +124,16 @@ async function processStep(stepWithDetails) {
   
   fs.writeFileSync(overridePath, overrideYml);
 
-  const env = {
-    githubToken,
-    ...getInputs()
-  };
+  // const env = {
+  //   githubToken,
+  //   ...getInputs()
+  // };
 
   console.log(`🚀 Running container for ${name}`);
   return runDockerComposeService({
     repoDir: renamedRepoDir,
     env: {
-      githubToken,
+      // githubToken,
       ...getInputs()
     },
     useUp: true
