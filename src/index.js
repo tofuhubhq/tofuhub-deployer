@@ -19,16 +19,16 @@ dotenv.config();
 const certPath = '/etc/tofuhub/certs/cert.pem';
 const keyPath = '/etc/tofuhub/certs/key.pem';
 
-const useSSL = fs.existsSync(certPath) && fs.existsSync(keyPath);
+// const useSSL = fs.existsSync(certPath) && fs.existsSync(keyPath);
 
 const fastify = Fastify({
   logger: true,
-  ...(useSSL && {
-    https: {
-      key: fs.readFileSync(keyPath),
-      cert: fs.readFileSync(certPath)
-    }
-  })
+  // ...(useSSL && {
+  //   https: {
+  //     key: fs.readFileSync(keyPath),
+  //     cert: fs.readFileSync(certPath)
+  //   }
+  // })
 });
 
 // Serve static files from the "public" folder
@@ -93,7 +93,7 @@ fastify.post('/collisions/check', async (request) => {
 
 async function start() {
   try {
-    const address = await fastify.listen({ port: 443, host: '0.0.0.0' });
+    const address = await fastify.listen({ port: 80, host: '0.0.0.0' });
 
     // Clean up current tofuhub folder on start
     try {
