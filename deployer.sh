@@ -101,8 +101,11 @@ npm ci
 npm run build
 
 # 3. Move artefacts where the Fastify app expects them
+echo "Removing public"
 rm -rf "$STATIC_TARGET_DIR"
+echo "Creating public"
 mkdir -p "$STATIC_TARGET_DIR"
+echo "Coping dist into public"
 cp -r "$CONSOLE_DIST_DIR"/* "$STATIC_TARGET_DIR"
 
 echo "✅ Vue console built and copied to $STATIC_TARGET_DIR"
