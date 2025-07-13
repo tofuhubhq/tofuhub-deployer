@@ -15,7 +15,7 @@ import InputsPanel from './components/InputsPanel.vue'
 
     <!-- Outer vertical split: Left (inputs + arch) | Right (logs) -->
     <Splitpanes class="main-body" horizontal>
-      <Pane min-size="80">
+      <Pane min-size="20">
         <Splitpanes>
           <!-- Inputs (top row) -->
           <Pane min-size="20">

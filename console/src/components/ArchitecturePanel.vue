@@ -48,7 +48,7 @@ async function layoutGraph(direction) {
       v-model:nodes="nodes"
       v-model:edges="edges"
       :default-edge-options="{ type: 'animation', animated: true }"
-      @nodes-initialized="layoutGraph('LR')"
+      @nodes-initialized="layoutGraph('TB')"
     >
       <template #node-database="props">
         <DatabaseNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />

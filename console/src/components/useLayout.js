@@ -9,7 +9,7 @@ import { ref } from 'vue'
  * @see https://github.com/dagrejs/dagre/wiki
  */
 export function useLayout() {
-  const { findNode } = useVueFlow()
+  const { findNode, fitView } = useVueFlow()
 
   const graph = ref(new dagre.graphlib.Graph())
 
@@ -22,7 +22,12 @@ export function useLayout() {
     dagreGraph.setDefaultEdgeLabel(() => ({}))
 
     const isHorizontal = direction === 'LR'
-    dagreGraph.setGraph({ rankdir: direction })
+    dagreGraph.setGraph({
+      rankdir: direction,
+      ranksep: 120,
+      nodesep: 100,
+      ranker: 'network-simplex',
+    })
 
     for (const node of nodes) {
       // if you need width+height of nodes for your layout, you can use the dimensions property of the internal node (`GraphNode` type)
@@ -43,7 +48,7 @@ export function useLayout() {
     dagre.layout(dagreGraph)
 
     // set nodes with updated positions
-    const laidOutNodes =  nodes.map((node) => {
+    const laidOutNodes = nodes.map((node) => {
       const nodeWithPosition = dagreGraph.node(node.id)
 
       return {
@@ -54,12 +59,11 @@ export function useLayout() {
       }
     })
 
-    // ✅ Schedule fitView to center graph after nodes are rendered
     requestAnimationFrame(() => {
-      fitView({ padding: 0.4 })  // adjust padding as needed
+      fitView({ padding: 0.1,  duration: 300 })  // adjust padding as needed
     })
 
-    return laidOutNodes
+    return laidOutNodes;
   }
 
   return { graph, layout }
