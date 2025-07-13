@@ -15,8 +15,7 @@ import InputsPanel from './components/InputsPanel.vue'
 
     <!-- Outer vertical split: Left (inputs + arch) | Right (logs) -->
     <Splitpanes class="main-body" horizontal>
-      <!-- LEFT column -->
-      <Pane min-size="20">
+      <Pane min-size="80">
         <Splitpanes>
           <!-- Inputs (top row) -->
           <Pane min-size="20">
@@ -26,7 +25,7 @@ import InputsPanel from './components/InputsPanel.vue'
           </Pane>
 
           <!-- Architecture (bottom row) -->
-          <Pane min-size="20">
+          <Pane min-size="80">
             <div class="panel architecture">
               <ArchitecturePanel />
             </div>
@@ -34,7 +33,6 @@ import InputsPanel from './components/InputsPanel.vue'
         </Splitpanes>
       </Pane>
 
-      <!-- RIGHT column: Logs -->
       <Pane min-size="20">
         <div class="panel logs">
           <LogsPanel />

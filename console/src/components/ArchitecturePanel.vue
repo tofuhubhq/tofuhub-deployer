@@ -3,12 +3,19 @@ import { nextTick, ref } from 'vue'
 import { Panel, VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import Icon from './Icon.vue'
-import ProcessNode from './ProcessNode.vue'
+// import ProcessNode from './CloudPrimitives/ProcessNode.vue/index.js'
+
 import AnimationEdge from './AnimationEdge.vue'
 
 import { initialEdges, initialNodes } from './initial-elements.js'
 import { useRunProcess } from './useRunProcess'
 import { useLayout } from './useLayout'
+
+import CacheNode from './CloudPrimitives/CacheNode.vue'
+import DatabaseNode from './CloudPrimitives/DatabaseNode.vue'
+import ServerNode from './CloudPrimitives/ServerNode.vue'
+import LoadBalancerNode from './CloudPrimitives/LoadBalancerNode.vue'
+import MqttBrokerNode from './CloudPrimitives/MqttBrokerNode.vue'
 
 const nodes = ref(initialNodes)
 
@@ -43,9 +50,26 @@ async function layoutGraph(direction) {
       :default-edge-options="{ type: 'animation', animated: true }"
       @nodes-initialized="layoutGraph('LR')"
     >
-      <template #node-process="props">
-        <ProcessNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
+      <template #node-database="props">
+        <DatabaseNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
       </template>
+
+      <template #node-cache="props">
+        <CacheNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
+      </template>
+
+      <template #node-server="props">
+        <ServerNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
+      </template>
+
+      <template #node-loadbalancer="props">
+        <LoadBalancerNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
+      </template>
+
+      <template #node-mqttbroker="props">
+        <MqttBrokerNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
+      </template>
+      
 
       <template #edge-animation="edgeProps">
         <AnimationEdge

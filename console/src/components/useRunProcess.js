@@ -9,6 +9,13 @@ export const ProcessStatus = {
   RUNNING: 'running',
 }
 
+export const CloudPrimitive = {
+  SERVER: 'server',
+  DATABASE: 'database',
+  LOAD_BALANCER: 'load_balancer',
+  VPC: 'vpc'
+}
+
 /**
  * Composable to simulate running a process tree.
  *
@@ -45,6 +52,7 @@ export function useRunProcess({ graph: dagreGraph, cancelOnError = true }) {
    * @param isStart Whether this is a starting node.
    */
   async function runNode(nodeId, isStart = false) {
+    console.info(`Running node`)
     if (executedNodes.has(nodeId)) {
       return
     }
@@ -153,11 +161,12 @@ export function useRunProcess({ graph: dagreGraph, cancelOnError = true }) {
    * @param nodes The nodes to reset.
    */
   function reset(nodes) {
+    console.info(`reset`)
     clear()
 
-    for (const node of nodes) {
-      updateNodeStatus(node.id, null)
-    }
+    // for (const node of nodes) {
+    //   updateNodeStatus(node.id, null)
+    // }
   }
 
   /**
