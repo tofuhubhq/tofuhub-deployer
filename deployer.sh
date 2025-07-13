@@ -82,7 +82,7 @@ echo "🚀 Tofuhub Deployer service started."
 echo "🧪 Verifying installation..."
 docker --version
 docker compose version || docker-compose version
-ollama --version || echo "⚠️ Ollama version check skipped"
+#ollama --version || echo "⚠️ Ollama version check skipped"
 
 ### ─────────────────────────────────────────────────────────────
 ### Build the Vue “console” app and copy its production bundle
