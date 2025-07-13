@@ -56,10 +56,10 @@ CONSOLE_DIST_DIR="$CONSOLE_SRC_DIR/dist"
 STATIC_TARGET_DIR="/tofuhub-deployer/public"
 
 # 1. Install the console’s deps (npm ci is reproducible & faster in CI)
-export CI=true
-export NODE_ENV=production
-export TERM=dumb
-export FORCE_COLOR=0
+# export CI=true
+# export NODE_ENV=production
+# export TERM=dumb
+# export FORCE_COLOR=0
 
 cd "$CONSOLE_SRC_DIR"
 npm ci
