@@ -100,6 +100,10 @@ npm ci
 # 2. Build for production;  Vue-CLI: `npm run build`  •  Vite: `npm run build` too
 npm run build
 
+echo "CONSOLE_SRC_DIR=$CONSOLE_SRC_DIR"
+echo "CONSOLE_DIST_DIR=$CONSOLE_DIST_DIR"
+echo "STATIC_TARGET_DIR=$STATIC_TARGET_DIR"
+
 # 3. Move artefacts where the Fastify app expects them
 echo "Removing public"
 rm -rf "$STATIC_TARGET_DIR"
