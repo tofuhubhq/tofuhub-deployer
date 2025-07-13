@@ -63,11 +63,12 @@ export FORCE_COLOR=0
 
 cd "$CONSOLE_SRC_DIR"
 npm ci
-npx vue-tsc --build
-npx vite build --logLevel silent --clearScreen false
+npm run build
+# npx vue-tsc --build
+# npx vite build --logLevel silent --clearScreen false
 
 # 2. Build for production;  Vue-CLI: `npm run build`  •  Vite: `npm run build` too
-npx vite build > /var/log/vite.log 2>&1
+# npx vite build > /var/log/vite.log 2>&1
 
 echo "CONSOLE_SRC_DIR=$CONSOLE_SRC_DIR"
 echo "CONSOLE_DIST_DIR=$CONSOLE_DIST_DIR"
