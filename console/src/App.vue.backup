@@ -1,0 +1,76 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import Navbar from './components/Navbar.vue';
+import ArchitecturePanel from './components/ArchitecturePanel.vue';
+import LogsPanel from './components/LogsPanel.vue';
+import DeployPanel from './components/DeployPanel.vue';
+import Sidebar from './components/Sidebar.vue';
+import InputsPanel from './components/InputsPanel.vue';
+
+const activeTab = ref('Inputs')
+</script>
+
+<template>
+  <div class="app-container">
+    <Navbar />
+
+    <div class="main-body">
+      <!-- Left side: Inputs + Architecture -->
+      <div class="left-column">
+        <div class="top-row">
+          <DeployPanel />
+        </div>
+        <div class="bottom-row">
+          <ArchitecturePanel />
+        </div>
+      </div>
+
+      <!-- Right side: Logs -->
+      <div class="right-column">
+        <LogsPanel />
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.main-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.left-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #333;
+  overflow: hidden;
+}
+
+.top-row {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  border-bottom: 1px solid #333;
+}
+
+.bottom-row {
+  flex: 1;
+  overflow: hidden;
+  /* padding: 16px; */
+}
+
+.right-column {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background-color: #0d0d0d; /* Optional: dark log panel */
+}
+</style>
