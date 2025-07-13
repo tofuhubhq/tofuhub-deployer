@@ -30,6 +30,11 @@ until docker info >/dev/null 2>&1; do
 done
 echo "✅ Docker is ready."
 
+echo "⏳ Waiting for apt lock..."
+while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+  sleep 1
+done
+
 ### Install Node.js and npm
 echo "📦 Installing Node.js and npm..."
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
