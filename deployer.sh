@@ -74,9 +74,9 @@ systemctl start tofuhub-deployer
 echo "🚀 Tofuhub Deployer service started."
 
 ### Install Ollama
-echo "🦙 Installing Ollama..."
-curl -fsSL https://ollama.com/install.sh | bash || echo "⚠️ Ollama install script may have exited nonzero"
-echo "✅ Ollama installed (or attempted)."
+#echo "🦙 Installing Ollama..."
+#curl -fsSL https://ollama.com/install.sh | bash || echo "⚠️ Ollama install script may have exited nonzero"
+#echo "✅ Ollama installed (or attempted)."
 
 ### Verify everything
 echo "🧪 Verifying installation..."
@@ -109,14 +109,14 @@ echo "✅ Vue console built and copied to $STATIC_TARGET_DIR"
 ### ─────────────────────────────────────────────────────────────
 
 ### Start Ollama
-echo "🛠️ Starting Ollama server in background..."
-nohup ollama serve > /var/log/ollama.log 2>&1 &
+#echo "🛠️ Starting Ollama server in background..."
+#nohup ollama serve > /var/log/ollama.log 2>&1 &
 
-echo "⏳ Waiting for Ollama server to become available..."
-until curl -s http://localhost:11434 > /dev/null; do
-  sleep 1
-done
-echo "✅ Ollama server is up!"
+#echo "⏳ Waiting for Ollama server to become available..."
+#until curl -s http://localhost:11434 > /dev/null; do
+#  sleep 1
+#done
+#echo "✅ Ollama server is up!"
 
-echo "🚀 Pulling llama3 model..."
-ollama run llama3 || echo "⚠️ Model load failed"
+#echo "🚀 Pulling llama3 model..."
+#ollama run llama3 || echo "⚠️ Model load failed"
