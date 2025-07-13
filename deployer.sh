@@ -84,6 +84,30 @@ docker --version
 docker compose version || docker-compose version
 ollama --version || echo "⚠️ Ollama version check skipped"
 
+### ─────────────────────────────────────────────────────────────
+### Build the Vue “console” app and copy its production bundle
+### ─────────────────────────────────────────────────────────────
+
+echo "🏗️  Building Vue console..."
+CONSOLE_SRC_DIR="/tofuhub-deployer/console"
+CONSOLE_DIST_DIR="$CONSOLE_SRC_DIR/dist"
+STATIC_TARGET_DIR="/tofuhub-deployer/public"
+
+# 1. Install the console’s deps (npm ci is reproducible & faster in CI)
+cd "$CONSOLE_SRC_DIR"
+npm ci
+
+# 2. Build for production;  Vue-CLI: `npm run build`  •  Vite: `npm run build` too
+npm run build
+
+# 3. Move artefacts where the Fastify app expects them
+rm -rf "$STATIC_TARGET_DIR"
+mkdir -p "$STATIC_TARGET_DIR"
+cp -r "$CONSOLE_DIST_DIR"/* "$STATIC_TARGET_DIR"
+
+echo "✅ Vue console built and copied to $STATIC_TARGET_DIR"
+### ─────────────────────────────────────────────────────────────
+
 ### Start Ollama
 echo "🛠️ Starting Ollama server in background..."
 nohup ollama serve > /var/log/ollama.log 2>&1 &
