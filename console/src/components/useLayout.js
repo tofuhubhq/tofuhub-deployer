@@ -43,7 +43,7 @@ export function useLayout() {
     dagre.layout(dagreGraph)
 
     // set nodes with updated positions
-    return nodes.map((node) => {
+    const laidOutNodes =  nodes.map((node) => {
       const nodeWithPosition = dagreGraph.node(node.id)
 
       return {
@@ -53,6 +53,13 @@ export function useLayout() {
         position: { x: nodeWithPosition.x, y: nodeWithPosition.y },
       }
     })
+
+    // ✅ Schedule fitView to center graph after nodes are rendered
+    requestAnimationFrame(() => {
+      fitView({ padding: 0.4 })  // adjust padding as needed
+    })
+
+    return laidOutNodes
   }
 
   return { graph, layout }

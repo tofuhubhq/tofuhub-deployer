@@ -15,6 +15,12 @@ export const initialNodes = [
     data,
   },
   {
+    id: '2d',
+    position: initialPos,
+    type: 'server',
+    data,
+  },
+  {
     id: '2a',
     position: initialPos,
     type: 'loadbalancer',
@@ -31,43 +37,7 @@ export const initialNodes = [
     position: initialPos,
     type: 'mqttbroker',
     data,
-  },
-  {
-    id: '2d',
-    position: initialPos,
-    type,
-    data,
-  },
-  {
-    id: '3',
-    position: initialPos,
-    type,
-    data,
-  },
-  {
-    id: '4',
-    position: initialPos,
-    type,
-    data,
-  },
-  {
-    id: '5',
-    position: initialPos,
-    type,
-    data,
-  },
-  {
-    id: '6',
-    position: initialPos,
-    type,
-    data,
-  },
-  {
-    id: '7',
-    position: initialPos,
-    type,
-    data,
-  },
+  }
 ]
 
 export const initialEdges = [
@@ -76,12 +46,10 @@ export const initialEdges = [
   { id: 'e2-2a', source: '2', target: '2a' },
   { id: 'e2-2b', source: '2', target: '2b' },
   { id: 'e2-2c', source: '2', target: '2c' },
-  { id: 'e2c-2d', source: '2c', target: '2d' },
-  { id: 'e3-7', source: '3', target: '4' },
-  { id: 'e4-5', source: '4', target: '5' },
-  { id: 'e5-6', source: '5', target: '6' },
-  { id: 'e5-7', source: '5', target: '7' },
+  { id: 'e2-2d', source: '2a', target: '2d' }
 ]
+
+
 
 
 
