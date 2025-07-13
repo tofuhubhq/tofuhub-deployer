@@ -60,7 +60,7 @@ cd "$CONSOLE_SRC_DIR"
 npm ci
 
 # 2. Build for production;  Vue-CLI: `npm run build`  •  Vite: `npm run build` too
-# npm run build
+npm run build
 
 echo "CONSOLE_SRC_DIR=$CONSOLE_SRC_DIR"
 echo "CONSOLE_DIST_DIR=$CONSOLE_DIST_DIR"
