@@ -79,7 +79,7 @@ const processPrimitive = computed(() => {
 </script> -->
 
 <script setup lang="ts">
-import { NodeProps } from '@vue-flow/core'
+import type { NodeProps } from '@vue-flow/core'
 
 const props = defineProps<NodeProps>()
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
-import { Handle, useNodeConnections, NodeProps } from '@vue-flow/core'
+import { Handle, useNodeConnections, Position } from '@vue-flow/core'
+import type { NodeProps } from '@vue-flow/core'
 
 /* ---------- props & fallbacks ---------- */
 const props = defineProps<NodeProps>()
@@ -28,8 +29,8 @@ const emoji = computed(() => '🧰')   // or '🚀' / '⚡' / '🗄️'
     </div> -->
 
     <!-- Vue-Flow handles -->
-    <Handle v-if="!isStartNode" type="target" position="top" />
-    <Handle v-if="!isEndNode"   type="source" position="bottom" />
+    <Handle v-if="!isStartNode" type="target" :position="Position.Top" />
+    <Handle v-if="!isEndNode"   type="source" :position="Position.Bottom" />
   </div>
 </template>
 
