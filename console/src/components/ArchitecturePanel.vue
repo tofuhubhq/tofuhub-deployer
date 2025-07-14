@@ -1,6 +1,6 @@
 <script setup>
 import { nextTick, ref } from 'vue'
-import { Panel, VueFlow, useVueFlow } from '@vue-flow/core'
+import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import Icon from './Icon.vue'
 // import ProcessNode from './CloudPrimitives/ProcessNode.vue/index.js'
@@ -51,23 +51,23 @@ async function layoutGraph(direction) {
       @nodes-initialized="layoutGraph('TB')"
     >
       <template #node-database="props">
-        <DatabaseNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
+        <DatabaseNode v-bind="props" />
       </template>
 
       <template #node-cache="props">
-        <CacheNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
+        <CacheNode v-bind="props" />
       </template>
 
       <template #node-server="props">
-        <ServerNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
+        <ServerNode v-bind="props" />
       </template>
 
       <template #node-loadbalancer="props">
-        <LoadBalancerNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
+        <LoadBalancerNode v-bind="props" />
       </template>
 
       <template #node-mqttbroker="props">
-        <MqttBrokerNode :data="props.data" :source-position="props.sourcePosition" :target-position="props.targetPosition" />
+        <MqttBrokerNode v-bind="props" />
       </template>
       
 

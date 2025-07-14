@@ -7,6 +7,7 @@ import fastifyStatic from '@fastify/static';
 import websocket from '@fastify/websocket';
 import * as dotenv from 'dotenv';
 import { resolve } from 'path';
+import cors from '@fastify/cors'
 
 import { rm } from 'fs/promises';
 import { logClients } from './lib/ws.js';
@@ -37,6 +38,7 @@ fastify.register(fastifyStatic, {
   prefix: '/', // optional: serve at root
 });
 
+fastify.register(cors)
 fastify.register(websocket);
 fastify.register(async function (app) {
   app.get('/logs', { websocket: true }, (conn, req) => {

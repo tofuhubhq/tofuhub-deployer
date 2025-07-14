@@ -1,52 +1,205 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, watch, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
-const variables = ref<Record<string, any>>({})
-const packageName = route.query.package as string
-const form = ref<Record<string, any>>({})
+const router = useRouter()
 
-onMounted(async () => {
-  // const res = await fetch('https://164.90.220.244/state', {
-  //   method: 'POST', // you're using `--data`, so it's POST
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({
-  //     steps: [{ name: packageName, package: packageName, type: 'PACKAGE' }],
-  //   }),
-  // })
+// ---- reactive state -------------------------------------------------------
+const isLoading = ref(false)
+const variables   = ref<Record<string, any>>({})
+const form        = ref<Record<string, any>>({})
+const loading     = ref(true)
+const error       = ref<string | null>(null)
+const collisions = ref<Record<string, { exists: boolean; message?: string }>>({})
 
-  // const data = await res.json()
-  // variables.value = data.variables
+const packageName = route.query.package as string | undefined
+// ---------------------------------------------------------------------------
+
+const hasCollisions = computed(() =>
+  Object.values(collisions.value).some((entry) => entry.exists)
+)
+
+/**
+ * Initialise deployer state for the selected package.
+ * Mirrors what the Rust CLI used to do.
+ */
+async function initPackageState (packageName: string) {
+  if (!packageName) {
+    error.value = 'No ?package= query param found'
+    loading.value = false
+    return
+  }
+
+  try {
+    const res = await fetch('http://localhost:80/state/init', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify([packageName])     // keep the array payload
+    })
+
+    if (!res.ok) throw new Error(await res.text())
+
+    const data = await res.json()              // { steps, variables, ... }
+    variables.value = data.variables ?? {}
+    // Seed the form with default / first accepted value
+    form.value = Object.fromEntries(
+      Object.entries(variables.value).map(([key, cfg]: any) => {
+        const fallback =
+          cfg.default ??
+          (Array.isArray(cfg.accepted_values) && cfg.accepted_values[0]) ??
+          ''
+        return [key, fallback]
+      })
+    )
+  } catch (e: any) {
+    error.value = e.message || 'Init failed'
+  } finally {
+    loading.value = false
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+
+// 1️⃣ Fire once on initial mount (if the query param is already there)
+onMounted(() => {
+  const pkg = route.query.package as string | undefined
+  if (pkg) initPackageState(pkg)
 })
 
+// 2️⃣ React if the URL changes or if the param shows up later
+watch(
+  () => route.query.package,
+  (pkg) => {
+    if (typeof pkg === 'string' && pkg.trim().length) {
+      initPackageState(pkg)
+    }
+  }
+)
+
+function setupLogStream(stepName?: string) {
+  const socket = new WebSocket(`wss://${location.host}/logs`)
+
+  socket.onmessage = (event) => {
+    const log = document.getElementById('log-output')
+    if (log) {
+      log.textContent += event.data
+      log.scrollTop = log.scrollHeight
+    }
+  }
+
+  socket.onerror = (e) => {
+    console.error('WebSocket error', e)
+  }
+}
+
+async function deploy() {
+  isLoading.value = true;
+  try {
+    /* ── 1. run a last-second collision check ───────────────────────────── */
+    const colRes = await fetch('http://localhost/collisions/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form.value),
+    })
+
+    if (!colRes.ok) throw new Error(await colRes.text())
+
+    const colResult = await colRes.json()
+    collisions.value = colResult            // update the UI
+
+    const hasAnyCollision = Object.values(colResult).some((e: any) => e.exists)
+    if (hasAnyCollision) return;
+
+    const res = await fetch('/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form.value),
+    })
+
+    if (!res.ok) throw new Error(await res.text())
+    console.log('✅ Deployment started')
+    setupLogStream()
+
+    // optionally route to a log screen or show toast
+  } catch (err) {
+    console.error('🚨 Deploy failed:', err)
+    error.value = (err as Error).message
+  } finally { 
+    isLoading.value = false;
+  }
+}
+
+async function checkCollisions() {
+  isLoading.value = true;
+  try {
+    const res = await fetch('http://localhost/collisions/check', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify(form.value),
+    })
+
+    if (!res.ok) throw new Error(await res.text())
+    const result = await res.json()
+    console.log('🧠 Collision check result:', result)
+
+    collisions.value = result
+  } catch (err) {
+    console.error('🚨 Collision check failed:', err)
+    error.value = (err as Error).message
+  } finally { 
+    isLoading.value = false;
+  }
+}
+
+function resetCollisionRetry(key: string) {
+  if (collisions.value[key]) {
+    delete collisions.value[key]
+  }
+}
 </script>
 
 <template>
-  <div>
-    <h2>Inputs for {{ packageName }}</h2>
-    <div v-if="Object.keys(variables).length === 0">Loading variables...</div>
-    
+  <div class="container">
+    <h2 v-if="packageName">Inputs for {{ packageName }}</h2>
+    <h2 v-else>No package specified</h2>
+
+    <div v-if="loading">Loading variables…</div>
+    <div v-else-if="error" class="error">{{ error }}</div>
+
     <div v-else>
       <div
         v-for="(config, key) in variables"
         :key="key"
         class="form-group"
       >
-        <label :for="key">{{ key }}</label>
+      <label :for="key" class="label-with-tooltip">
+        {{ key }}
+        <span
+          v-if="config.description"
+          class="tooltip-icon"
+          :title="config.description"
+        >❓</span>
+      </label>
 
         <input
           v-if="config.type === 'string' || config.type === 'number'"
+          :id="key"
           :type="config.type === 'number' ? 'number' : 'text'"
           v-model="form[key]"
           :placeholder="config.description"
+          :disabled="isLoading"
+          :class="{ 'colliding': collisions[key]?.exists }"
+          @input="() => resetCollisionRetry(key)"
         />
 
         <select
-          v-else-if="config.accepted_values.length > 0"
+          v-else-if="config.accepted_values?.length"
+          :id="key"
           v-model="form[key]"
+          :disabled="isLoading"
+          @input="() => resetCollisionRetry(key)"
+          :class="{ 'colliding': collisions[key]?.exists }"
         >
           <option
             v-for="val in config.accepted_values"
@@ -56,7 +209,128 @@ onMounted(async () => {
             {{ val }}
           </option>
         </select>
+
+        <p v-if="collisions[key]?.exists" class="collision-msg">
+          {{ collisions[key].message || 'Collision detected' }}
+        </p>
       </div>
+      <button @click="deploy" :disabled="hasCollisions || isLoading">Deploy</button>
+      <button @click="checkCollisions" :disabled="isLoading">Check collisions</button>
     </div>
   </div>
 </template>
+
+<style scoped>
+.container {
+  padding: 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+  font-family: system-ui, sans-serif;
+  background: #f9fafb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #111827;
+}
+
+.error {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  color: #374151;
+}
+
+input,
+select {
+  padding: 0.6rem 0.8rem;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus,
+select:focus {
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.colliding {
+  border: 2px solid #dc2626 !important;
+  background-color: #fef2f2 !important;
+}
+
+.collision-msg {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+  padding-left: 0.2rem;
+}
+
+button {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: white;
+  background-color: #2563eb;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 0.8rem;
+  margin-top: 1rem;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #1d4ed8;
+}
+
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+input[disabled],
+select[disabled] {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #cbd5e1;
+  border-top: 2px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+</style>

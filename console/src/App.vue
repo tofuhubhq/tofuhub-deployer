@@ -25,7 +25,7 @@ import InputsPanel from './components/InputsPanel.vue'
           </Pane>
 
           <!-- Architecture (bottom row) -->
-          <Pane min-size="80">
+          <Pane min-size="20">
             <div class="panel architecture">
               <ArchitecturePanel />
             </div>
