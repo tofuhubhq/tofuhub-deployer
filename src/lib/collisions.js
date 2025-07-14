@@ -66,7 +66,7 @@ export async function checkCollisions(inputs) {
         "type": "string",
         "required": false,
         "default": "",
-        "description": "Digital ocean domain",
+        "description": "DigitalOcean domain",
         "primitive": "domain",
         "provider": "digitalocean"
       },
@@ -74,7 +74,7 @@ export async function checkCollisions(inputs) {
         "type": "string",
         "required": false,
         "default": "",
-        "description": "Digital ocean access token",
+        "description": "DigitalOcean access token",
         "primitive": "access_token",
         "provider": "digitalocean",
         "secret": true
@@ -83,7 +83,7 @@ export async function checkCollisions(inputs) {
         "type": "string",
         "required": false,
         "default": "",
-        "description": "Digital ocean project name",
+        "description": "DigitalOcean project name",
         "primitive": "project",
         "provider": "digitalocean"
       },
@@ -91,167 +91,195 @@ export async function checkCollisions(inputs) {
         "type": "string",
         "required": false,
         "default": "",
-        "description": "Digital ocean project description",
+        "description": "DigitalOcean project description",
         "primitive": "project_description",
         "provider": "digitalocean"
       },
-      "do_vpc": {
+      "do_vpc_name": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean vpc region",
+        "description": "DigitalOcean VPC name",
         "primitive": "vpc",
         "provider": "digitalocean"
       },
       "do_vpc_region": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean vpc region",
+        "description": "DigitalOcean VPC region",
         "primitive": "region",
+        "provider": "digitalocean"
+      },
+      "do_ssh_firewall_name": {
+        "type": "string",
+        "required": true,
+        "description": "Firewall name for SSH access",
+        "primitive": "firewall",
         "provider": "digitalocean"
       },
       "do_db_name": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean db name",
+        "description": "Database name",
         "primitive": "database",
         "provider": "digitalocean"
       },
       "do_db_engine": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean db engine",
+        "description": "Database engine",
         "primitive": "database_engine",
         "provider": "digitalocean"
       },
       "do_db_version": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean db version",
+        "description": "Database version",
         "primitive": "database_version",
         "provider": "digitalocean"
       },
       "do_db_size": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean db size",
+        "description": "Database size",
         "primitive": "size",
         "provider": "digitalocean"
       },
       "do_db_region": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean db region",
+        "description": "Database region",
         "primitive": "region",
         "provider": "digitalocean"
       },
       "do_db_node_count": {
+        "type": "number",
+        "required": true,
+        "description": "Number of database nodes",
+        "primitive": "count",
+        "provider": "digitalocean"
+      },
+      "do_mosquitto_name": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean db node count",
-        "primitive": "count",
+        "description": "Name for the Mosquitto droplet",
+        "primitive": "name",
+        "provider": "digitalocean"
+      },
+      "do_mosquitto_firewall_name": {
+        "type": "string",
+        "required": true,
+        "description": "Firewall name for Mosquitto",
+        "primitive": "firewall",
         "provider": "digitalocean"
       },
       "do_mosquitto_region": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean mosquitto region",
+        "description": "Mosquitto region",
         "primitive": "region",
         "provider": "digitalocean"
       },
       "do_mosquitto_image": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean mosquitto image",
+        "description": "Image for Mosquitto droplet",
         "primitive": "image",
         "provider": "digitalocean"
       },
       "do_mosquitto_size": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean mosquitto size",
+        "description": "Size of Mosquitto droplet",
         "primitive": "size",
         "provider": "digitalocean"
       },
       "do_mosquitto_username": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean mosquitto username",
+        "description": "Mosquitto username",
         "primitive": "username",
         "provider": "digitalocean"
       },
       "do_mosquitto_password": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean mosquitto password",
+        "description": "Mosquitto password",
         "primitive": "password",
         "provider": "digitalocean",
         "secret": true
       },
       "do_chirpstack_droplet_count": {
-        "type": "string",
+        "type": "number",
         "required": true,
-        "description": "Digital ocean access token",
+        "description": "Number of ChirpStack droplets",
         "primitive": "count",
         "provider": "digitalocean"
       },
       "do_chirpstack_droplet_size": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean access token",
+        "description": "ChirpStack droplet size",
         "primitive": "size",
         "provider": "digitalocean"
       },
       "do_chirpstack_droplet_image": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean access token",
+        "description": "ChirpStack image",
         "primitive": "image",
         "provider": "digitalocean"
       },
       "do_chirpstack_droplet_region": {
         "type": "string",
         "required": true,
-        "description": "Digital ocean access token",
+        "description": "ChirpStack region",
         "primitive": "region",
+        "provider": "digitalocean"
+      },
+      "redis_droplet_name": {
+        "type": "string",
+        "required": true,
+        "default": "redis",
+        "description": "Name for Redis droplet",
+        "primitive": "name",
         "provider": "digitalocean"
       },
       "redis_droplet_size": {
         "type": "string",
-        "required": false,
+        "required": true,
         "default": "s-1vcpu-1gb",
-        "description": "Droplet size for redis",
+        "description": "Size for Redis droplet",
         "primitive": "size",
         "provider": "digitalocean"
       },
       "redis_droplet_image": {
         "type": "string",
-        "required": false,
+        "required": true,
         "default": "ubuntu-22-04-x64",
-        "description": "Image for redis Droplet",
+        "description": "Image for Redis droplet",
         "primitive": "image",
         "provider": "digitalocean"
       },
       "redis_region": {
         "type": "string",
         "required": true,
-        "description": "Region for redis Droplet",
+        "description": "Region for Redis droplet",
         "primitive": "region",
         "provider": "digitalocean"
       },
       "redis_password": {
         "type": "string",
         "required": true,
-        "description": "Password to secure redis",
+        "description": "Password for Redis",
         "primitive": "password",
         "provider": "digitalocean",
         "secret": true
       },
-      "private_key_path": {
+      "do_loadbalancer_name": {
         "type": "string",
-        "required": false,
-        "default": "~/.ssh/id_rsa",
-        "description": "Path to your private SSH key",
-        "primitive": "file_path",
+        "required": true,
+        "description": "Name of the load balancer",
+        "primitive": "name",
         "provider": "digitalocean"
       },
       "do_ssh_key_name": {
@@ -259,6 +287,14 @@ export async function checkCollisions(inputs) {
         "required": true,
         "description": "SSH key name",
         "primitive": "ssh_key_name",
+        "provider": "digitalocean"
+      },
+      "private_key_path": {
+        "type": "string",
+        "required": false,
+        "default": "~/.ssh/id_rsa",
+        "description": "Path to your private SSH key",
+        "primitive": "file_path",
         "provider": "digitalocean"
       }
     }
