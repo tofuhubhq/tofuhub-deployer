@@ -65,6 +65,9 @@ export CI=true
 export TERM=dumb
 export FORCE_COLOR=0
 
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+chmod 600 ~/.ssh/id_rsa
+
 cd "$CONSOLE_SRC_DIR"
 npm ci
 
