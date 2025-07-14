@@ -2,6 +2,17 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+const HOST =
+  import.meta.env.DEV
+    ? 'localhost:80'
+    : window.location.host
+
+const HTTP_HOST = `http://${HOST}`
+const WS_HOST = `ws://${HOST}`
+
+console.info(HOST)
+console.info(HTTP_HOST)
+console.info(WS_HOST)
 const route = useRoute()
 const router = useRouter()
 
@@ -13,7 +24,9 @@ const loading     = ref(true)
 const error       = ref<string | null>(null)
 const collisions = ref<Record<string, { exists: boolean; message?: string }>>({})
 
-const packageName = route.query.package as string | undefined
+const packageName = computed(() => {
+  return route.query.package as string | undefined
+})
 // ---------------------------------------------------------------------------
 
 const hasCollisions = computed(() =>
@@ -32,7 +45,7 @@ async function initPackageState (packageName: string) {
   }
 
   try {
-    const res = await fetch('http://localhost:80/state/init', {
+    const res = await fetch(`${HTTP_HOST}/state/init`, {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify([packageName])     // keep the array payload
@@ -52,6 +65,8 @@ async function initPackageState (packageName: string) {
         return [key, fallback]
       })
     )
+
+    checkCollisions()
   } catch (e: any) {
     error.value = e.message || 'Init failed'
   } finally {
@@ -78,7 +93,7 @@ watch(
 )
 
 function setupLogStream(stepName?: string) {
-  const socket = new WebSocket(`wss://${location.host}/logs`)
+  const socket = new WebSocket(`${WS_HOST}/logs`)
 
   socket.onmessage = (event) => {
     const log = document.getElementById('log-output')
@@ -97,7 +112,7 @@ async function deploy() {
   isLoading.value = true;
   try {
     /* ── 1. run a last-second collision check ───────────────────────────── */
-    const colRes = await fetch('http://localhost/collisions/check', {
+    const colRes = await fetch(`${HTTP_HOST}/collisions/check`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value),
@@ -111,7 +126,7 @@ async function deploy() {
     const hasAnyCollision = Object.values(colResult).some((e: any) => e.exists)
     if (hasAnyCollision) return;
 
-    const res = await fetch('/deploy', {
+    const res = await fetch(`${HTTP_HOST}/deploy`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value),
@@ -133,7 +148,8 @@ async function deploy() {
 async function checkCollisions() {
   isLoading.value = true;
   try {
-    const res = await fetch('http://localhost/collisions/check', {
+    console.info(`${HTTP_HOST}/collisions/check`)
+    const res = await fetch(`${HTTP_HOST}/collisions/check`, {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify(form.value),
@@ -141,7 +157,6 @@ async function checkCollisions() {
 
     if (!res.ok) throw new Error(await res.text())
     const result = await res.json()
-    console.log('🧠 Collision check result:', result)
 
     collisions.value = result
   } catch (err) {
@@ -215,7 +230,7 @@ function resetCollisionRetry(key: string) {
         </p>
       </div>
       <button @click="deploy" :disabled="hasCollisions || isLoading">Deploy</button>
-      <button @click="checkCollisions" :disabled="isLoading">Check collisions</button>
+      <!-- <button @click="checkCollisions" :disabled="isLoading">Check collisions</button> -->
     </div>
   </div>
 </template>
