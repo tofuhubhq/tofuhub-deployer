@@ -66,7 +66,6 @@ async function initPackageState (packageName: string) {
       })
     )
 
-    checkCollisions()
   } catch (e: any) {
     error.value = e.message || 'Init failed'
   } finally {
