@@ -30,11 +30,12 @@ async function processStep(stepWithDetails) {
     process.env.TOFUHUB_API_TOKEN
   );
 
+  const privKeyPath = path.join(homedir(), '.ssh', 'id_rsa')
   const pubKeyPath = path.join(homedir(), '.ssh', 'id_rsa.pub')
   const pubKey = readFileSync(pubKeyPath, 'utf8').trim()
     
   // Upload SSH key to all relevant providers
-  await uploadPublicKeyToAllProviders(pubKey, pkgDetails.versions.configuration.inputs, getInputs());
+  const keyIds = await uploadPublicKeyToAllProviders(pubKey, pkgDetails.versions.configuration.inputs, getInputs());
   
   // If the tofuhub directory does not exist, then create it. This is where
   // all the repos will be cloned into by the runner
@@ -113,7 +114,9 @@ async function processStep(stepWithDetails) {
     repoDir: renamedRepoDir,
     env: {
       // githubToken,
-      ...getInputs()
+      ...getInputs(),
+      private_key_path: privKeyPath,
+      do_ssh_key_ids: keyIds.digitalocean ? [keyIds.digitalocean] : undefined
     },
     useUp: true
   });
@@ -148,9 +151,9 @@ function pushPublicKeyToDigitalOcean(publicKey, keyName, accessToken) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           try {
             const parsed = JSON.parse(body)
-            resolve(parsed.ssh_key.id)
+            return resolve(parsed.ssh_key.id)
           } catch (err) {
-            reject(new Error(`Failed to parse DigitalOcean response: ${body}`))
+            return reject(new Error(`Failed to parse DigitalOcean response: ${body}`))
           }
         } else {
           reject(new Error(`DigitalOcean API error ${res.statusCode}: ${body}`))
@@ -185,6 +188,7 @@ function findAccessTokenForProvider(provider, configMap, inputs) {
  */
 async function uploadPublicKeyToAllProviders(pubKey, configMap, inputs) {
   const providers = new Set()
+  const keyIds = {}; // <-- result we return
 
   // Step 1: Extract all providers
   for (const key in configMap) {
@@ -206,15 +210,19 @@ async function uploadPublicKeyToAllProviders(pubKey, configMap, inputs) {
     if (provider === 'digitalocean') {
       try {
         console.log(`🔐 Uploading SSH key to DigitalOcean...`)
-        await pushPublicKeyToDigitalOcean(pubKey, 'tofuhub-deployer', token)
+        const id = await pushPublicKeyToDigitalOcean(pubKey, 'tofuhub-deployer', token)
+        keyIds[provider] = id.toString(); // store as string for TF
+
         console.log(`✅ SSH key uploaded to DigitalOcean.`)
       } catch (err) {
         console.error(`❌ Failed to upload SSH key to DigitalOcean:`, err)
       }
     } else {
       console.warn(`⚠️  No handler defined for provider "${provider}", skipping.`)
-    }
+    } 
   }
+
+  return keyIds;
 }
 
 
