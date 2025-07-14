@@ -1,4 +1,8 @@
+import { homedir } from "os";
 import { fetchPackage } from "./repo.js";
+import path from 'path';
+import { readFileSync } from "fs";
+import { request } from 'https'
 
 let _state = {
   // Steps are the set of packages/configurations that need to be processed
@@ -38,14 +42,15 @@ export async function initState(packages) {
   // Fetch the package details to figure out the type of package,
   // i.e. if it's a package or an agent.
   const fetchedPackages = [];
+  let pkgDetails;
   for (const pkg of packages) {
-    const pkgDetails = await fetchPackage(
+    pkgDetails = await fetchPackage(
       `https://api.tofuhub.co/functions/v1/packages/${pkg}`,
       process.env.TOFUHUB_API_TOKEN
     );
 
     fetchedPackages.push(pkgDetails)
-    setStep(pkgDetails.name, pkg, pkgDetails.package_types.name, pkgDetails.versions.variables)
+    setStep(pkgDetails.name, pkg, pkgDetails.package_types.name, pkgDetails.versions.configuration)
   }
 
   const variables = mergeInputsWithConflictCheck(fetchedPackages);

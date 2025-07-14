@@ -1,41 +1,13 @@
 import { getState, getSteps, getInputs } from "./state.js"
 import path from 'path';
-import os from 'os';
-import fs from 'fs';
-import { execSync, spawn } from "child_process";
+import os, { homedir } from 'os';
+import fs, { readFileSync } from 'fs';
+import https from 'https';
+import { execSync } from "child_process";
 // import { createGithubRepoAndPush, getGithubToken } from "./github.js";
 import { sendToClients } from "./ws.js";
 import { fetchPackage } from "./repo.js";
 import { runDockerComposeService } from "./docker.js";
-
-// function runDockerBuild(stepName, path) {
-//   return new Promise((resolve, reject) => {
-//     const dockerBuild = spawn('docker', ['build', '--network', 'host', '-t', `tofuhub-${stepName}`, '.'], {
-//       cwd: path,
-//     });
-
-//     dockerBuild.stdout.on('data', (data) => {
-//       sendToClients(data.toString());
-//     });
-
-//     dockerBuild.stderr.on('data', (data) => {
-//       sendToClients(data.toString());
-//     });
-
-//     dockerBuild.on('close', (code) => {
-//       sendToClients(`[build done: exit code ${code}]`);
-//       if (code === 0) {
-//         return resolve();
-//       } else {
-//         return reject(new Error(`Docker build failed with exit code ${code}`));
-//       }
-//     });
-
-//     dockerBuild.on('error', (err) => {
-//       return reject(err);
-//     });
-//   });
-// }
 
 async function processStep(stepWithDetails) {
   console.info(`Processing step ${stepWithDetails.name}`)
@@ -52,10 +24,17 @@ async function processStep(stepWithDetails) {
     return;
   }
 
+  
   const pkgDetails = await fetchPackage(
     `https://api.tofuhub.co/functions/v1/packages/${packageName}`,
     process.env.TOFUHUB_API_TOKEN
   );
+
+  const pubKeyPath = path.join(homedir(), '.ssh', 'id_rsa.pub')
+  const pubKey = readFileSync(pubKeyPath, 'utf8').trim()
+    
+  // Upload SSH key to all relevant providers
+  await uploadPublicKeyToAllProviders(pubKey, pkgDetails.versions.configuration.inputs, getInputs());
   
   // If the tofuhub directory does not exist, then create it. This is where
   // all the repos will be cloned into by the runner
@@ -139,6 +118,105 @@ async function processStep(stepWithDetails) {
     useUp: true
   });
 }
+
+function pushPublicKeyToDigitalOcean(publicKey, keyName, accessToken) {
+  return new Promise((resolve, reject) => {
+    const data = JSON.stringify({
+      name: keyName,
+      public_key: publicKey
+    })
+
+    const options = {
+      hostname: 'api.digitalocean.com',
+      path: '/v2/account/keys',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data)
+      }
+    }
+
+    const req = https.request(options, (res) => {
+      let body = ''
+
+      res.on('data', (chunk) => {
+        body += chunk
+      })
+
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          try {
+            const parsed = JSON.parse(body)
+            resolve(parsed.ssh_key.id)
+          } catch (err) {
+            reject(new Error(`Failed to parse DigitalOcean response: ${body}`))
+          }
+        } else {
+          reject(new Error(`DigitalOcean API error ${res.statusCode}: ${body}`))
+        }
+      })
+    })
+
+    req.on('error', (err) => {
+      reject(err)
+    })
+
+    req.write(data)
+    req.end()
+  })
+}
+
+function findAccessTokenForProvider(provider, configMap, inputs) {
+  for (const key in configMap) {
+    const entry = configMap[key]
+    if (entry.provider === provider && entry.primitive === 'access_token') {
+      return inputs[key]
+    }
+  }
+  return undefined
+}
+
+/**
+ * Uploads the SSH public key to all relevant providers found in the configMap.
+ * @param {string} pubKey - The SSH public key contents
+ * @param {Object} configMap - Configuration describing each input
+ * @param {Object} inputs - Actual values for each input
+ */
+async function uploadPublicKeyToAllProviders(pubKey, configMap, inputs) {
+  const providers = new Set()
+
+  // Step 1: Extract all providers
+  for (const key in configMap) {
+    const entry = configMap[key]
+    if (entry.provider) {
+      providers.add(entry.provider)
+    }
+  }
+
+  // Step 2: Upload to each provider
+  for (const provider of providers) {
+    const token = findAccessTokenForProvider(provider, configMap, inputs)
+
+    if (!token) {
+      console.warn(`⚠️  No access token found for provider "${provider}", skipping.`)
+      continue
+    }
+
+    if (provider === 'digitalocean') {
+      try {
+        console.log(`🔐 Uploading SSH key to DigitalOcean...`)
+        await pushPublicKeyToDigitalOcean(pubKey, 'tofuhub-deployer', token)
+        console.log(`✅ SSH key uploaded to DigitalOcean.`)
+      } catch (err) {
+        console.error(`❌ Failed to upload SSH key to DigitalOcean:`, err)
+      }
+    } else {
+      console.warn(`⚠️  No handler defined for provider "${provider}", skipping.`)
+    }
+  }
+}
+
 
 export async function run() {
   console.debug(`Started processing steps..`)
