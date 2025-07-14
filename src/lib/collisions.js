@@ -236,6 +236,13 @@ export async function checkCollisions(inputs) {
         "primitive": "region",
         "provider": "digitalocean"
       },
+      "do_chirpstack_firewall_name": {
+        "type": "string",
+        "required": true,
+        "description": "Firewall name for Chirpstack",
+        "primitive": "firewall",
+        "provider": "digitalocean"
+      },
       "redis_droplet_name": {
         "type": "string",
         "required": true,
