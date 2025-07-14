@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
+const HOST =
+  import.meta.env.DEV
+    ? 'localhost:80'
+    : window.location.host
+
+const WS_HOST = `ws://${HOST}`
+
 const logs = ref('')
 let socket: WebSocket | null = null
 
 onMounted(() => {
-  socket = new WebSocket(`ws://localhost:80/logs`)
+  socket = new WebSocket(`${WS_HOST}/logs`)
 
   socket.onmessage = (event) => {
     logs.value += event.data
