@@ -45,7 +45,7 @@ fastify.register(fastifyStatic, {
 
 fastify.get('/api/files/:packageName', async (req, reply) => {
   const { packageName } = req.params;
-  const baseDir = path.join(__dirname, 'public/outputs', packageName);
+  const baseDir = path.join(__dirname, '..', 'public', 'outputs', packageName);
 
   if (!fs.existsSync(baseDir)) {
     return reply.code(404).send({ error: 'Package not found' });
