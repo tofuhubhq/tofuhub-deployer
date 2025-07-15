@@ -47,6 +47,7 @@ fastify.register(fastifyStatic, {
 fastify.register(fastifyStatic, {
   root: path.join(resolve('public'), 'outputs'),
   prefix: '/public/',
+  decorateReply: false, // ✅ prevent duplicate decorator
 });
 
 fastify.get('/api/files/:packageName', async (req, reply) => {
