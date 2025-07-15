@@ -40,20 +40,11 @@ async function processStep(stepWithDetails) {
   
   // If the tofuhub directory does not exist, then create it. This is where
   // all the repos will be cloned into by the runner
-  const cwd = process.cwd();
-  console.info(cwd)
-  const tofuhubDir = path.join(cwd, 'tofuhub');
-  console.info(tofuhubDir)
-  if (!fs.existsSync(tofuhubDir)) {
-    console.info(`cretaed ${tofuhubDir}`)
-    fs.mkdirSync(tofuhubDir);
-  } else {
-    console.info(`already existing cretaed ${tofuhubDir}`)
-  }
+  const outputsDir = '/outputs'
+  if (!fs.existsSync(outputsDir)) fs.mkdirSync(outputsDir);
 
-  
   const repoUrl = pkgDetails.versions.repository;
-  const repoDir = path.join(tofuhubDir, packageName);
+  const repoDir = path.join(outputsDir, packageName);
 
   // Clone the repo
   console.log(`📥 Cloning ${repoUrl} to ${repoDir}`);

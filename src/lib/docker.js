@@ -27,9 +27,8 @@ export function runDockerComposeService({
   // === Generate override file for volumes ===
   const volumeMappings = [
     [os.homedir() + '/.ssh', '/root/.ssh:ro'],
-    [resolvedRepoDir, '/repo'],
-    ['/var/run/docker.sock', '/var/run/docker.sock'],
     [fastifyPublicOutputsPath, '/outputs'],
+    ['/var/run/docker.sock', '/var/run/docker.sock'],
     ...extraVolumes
   ];
 
