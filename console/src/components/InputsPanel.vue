@@ -14,6 +14,7 @@ const router = useRouter()
 
 const deployer = computed(() => route.query.deployer as string | undefined)
 const dropletId = computed(() => route.query.droplet_id as string | undefined)
+const token = computed(() => route.query.token as string | undefined)
 
 // ---- reactive state -------------------------------------------------------
 const isLoading = ref(false)
@@ -185,7 +186,7 @@ async function destroyDroplet() {
       body: JSON.stringify({
         deployer: deployer.value,
         droplet_id: Number(dropletId.value),
-        token: import.meta.env.VITE_DO_TOKEN || '' // or prompt user input securely
+        token: token.value
       })
     });
 
