@@ -51,13 +51,15 @@ async function processStep(stepWithDetails) {
     console.info(`already existing cretaed ${tofuhubDir}`)
   }
 
-  return;
+  
   const repoUrl = pkgDetails.versions.repository;
   const repoDir = path.join(tofuhubDir, packageName);
 
   // Clone the repo
   console.log(`📥 Cloning ${repoUrl} to ${repoDir}`);
   execSync(`git clone ${repoUrl} ${repoDir}`, { stdio: 'inherit' });
+
+  return;
 
   // TODO: add collision checking also before it runs
   // await checkCollisions();
