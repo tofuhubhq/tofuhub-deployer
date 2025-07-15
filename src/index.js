@@ -106,6 +106,24 @@ fastify.post('/collisions/check', async (request) => {
   return checkCollisions(request.body);
 });
 
+fastify.setNotFoundHandler((req, reply) => {
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+
+  // If it's a request for a frontend route (not an API or file)
+  if (
+    req.raw.method === 'GET' &&
+    !req.raw.url.includes('.') &&           // skip file requests like .js, .css
+    !req.raw.url.startsWith('/api') &&      // skip API routes
+    !req.raw.url.startsWith('/outputs')     // skip file output routes
+  ) {
+    return reply.type('text/html').send(fs.readFileSync(indexPath));
+  }
+
+  // For all else (bad API/static request), send a normal 404
+  reply.code(404).send({ error: 'Not found' });
+});
+
+
 async function start() {
   try {
     const address = await fastify.listen({ port: 80, host: '0.0.0.0' });
