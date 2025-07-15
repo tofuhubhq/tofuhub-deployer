@@ -81,7 +81,6 @@ npm run build
 # npx vite build > /var/log/vite.log 2>&1
 
 
-
 echo "CONSOLE_SRC_DIR=$CONSOLE_SRC_DIR"
 echo "CONSOLE_DIST_DIR=$CONSOLE_DIST_DIR"
 echo "STATIC_TARGET_DIR=$STATIC_TARGET_DIR"

@@ -47,7 +47,9 @@ async function processStep(stepWithDetails) {
   if (!fs.existsSync(tofuhubDir)) {
     console.info(`cretaed ${tofuhubDir}`)
     fs.mkdirSync(tofuhubDir);
-  } 
+  } else {
+    console.info(`already existing cretaed ${tofuhubDir}`)
+  }
 
   const repoUrl = pkgDetails.versions.repository;
   const repoDir = path.join(tofuhubDir, packageName);
