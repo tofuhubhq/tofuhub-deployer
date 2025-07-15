@@ -85,46 +85,9 @@ async function processStep(stepWithDetails) {
     process.exit(1);
   }
 
-  console.log(`🐳 Building Docker image for ${name}`);
-  
-  // await runDockerBuild(`tofuhub-${name}`, renamedRepoDir);
-  const overridePath = path.join(os.tmpdir(), 'tofuhub.override.yml');
-  const serviceName = 'tofuhub-runner';
-  const resolvedRepoDir = path.resolve(repoDir);
-
-const fastifyPublicOutputsPath = path.resolve(process.cwd(), 'public', pkgDetails.name);
-console.info(`fastify public path: ${fastifyPublicOutputsPath}`);
-if (!fs.existsSync(fastifyPublicOutputsPath)) {
-  fs.mkdirSync(fastifyPublicOutputsPath, { recursive: true });
-}
-
-  const volumeMappings = [
-    [os.homedir() + '/.ssh', '/root/.ssh:ro'],
-    [resolvedRepoDir, '/repo'],
-    [fastifyPublicOutputsPath, '/outputs']
-  ];
-  
-  const overrideYml = `
-  version: '3.9'
-  services:
-    ${serviceName}:
-      network_mode: host
-      build:
-        context: .
-        dockerfile: Dockerfile
-      volumes:
-  ${volumeMappings.map(([local, container]) => `      - "${path.resolve(local)}:${container}"`).join('\n')}
-  `;
-  
-  fs.writeFileSync(overridePath, overrideYml);
-
-  // const env = {
-  //   githubToken,
-  //   ...getInputs()
-  // };
-
   console.log(`🚀 Running container for ${name}`);
   return runDockerComposeService({
+    packageName: packageName,
     repoDir: renamedRepoDir,
     env: {
       // githubToken,
