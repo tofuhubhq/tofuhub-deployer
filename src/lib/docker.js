@@ -18,7 +18,7 @@ export function runDockerComposeService({
   const resolvedRepoDir = path.resolve(repoDir);
   const overridePath = path.join(os.tmpdir(), 'tofuhub.override.yml');
 
-  const fastifyPublicOutputsPath = path.resolve(process.cwd(), 'public', packageName);
+  const fastifyPublicOutputsPath = path.resolve(process.cwd(), 'public/outputs', packageName);
   console.info(`fastify public path: ${fastifyPublicOutputsPath}`);
   if (!fs.existsSync(fastifyPublicOutputsPath)) {
     fs.mkdirSync(fastifyPublicOutputsPath, { recursive: true });

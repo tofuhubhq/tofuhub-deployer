@@ -35,8 +35,21 @@ const fastify = Fastify({
 // Serve static files from the "public" folder
 fastify.register(fastifyStatic, {
   root: resolve('public'),
-  prefix: '/public/', // optional: serve at root
+  prefix: '/', // optional: serve at root
 });
+
+fastify.get('/api/files/:packageName', async (req, reply) => {
+  const { packageName } = req.params;
+  const baseDir = path.join(__dirname, 'public/outputs', packageName);
+
+  if (!fs.existsSync(baseDir)) {
+    return reply.code(404).send({ error: 'Package not found' });
+  }
+
+  const files = fs.readdirSync(baseDir).filter(f => fs.statSync(path.join(baseDir, f)).isFile());
+  return { files };
+});
+
 
 fastify.register(cors)
 fastify.register(websocket);
@@ -92,19 +105,6 @@ fastify.post('/destroy', async (request, reply) => {
 fastify.post('/collisions/check', async (request) => {
   return checkCollisions(request.body);
 });
-
-fastify.get('/api/files/:packageName', async (req, reply) => {
-  const { packageName } = req.params;
-  const baseDir = path.join(__dirname, 'public', packageName);
-
-  if (!fs.existsSync(baseDir)) {
-    return reply.code(404).send({ error: 'Package not found' });
-  }
-
-  const files = fs.readdirSync(baseDir).filter(f => fs.statSync(path.join(baseDir, f)).isFile());
-  return { files };
-});
-
 
 async function start() {
   try {
