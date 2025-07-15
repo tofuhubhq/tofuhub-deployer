@@ -51,6 +51,7 @@ async function processStep(stepWithDetails) {
     console.info(`already existing cretaed ${tofuhubDir}`)
   }
 
+  return;
   const repoUrl = pkgDetails.versions.repository;
   const repoDir = path.join(tofuhubDir, packageName);
 
