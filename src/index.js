@@ -64,10 +64,11 @@ fastify.get('/api/download/:packageName.zip', async (req, reply) => {
 
   const archive = archiver('zip', { zlib: { level: 9 } });
   console.info(folderPath)
+  archive.pipe(reply.raw);
   archive.directory(folderPath, false);
   archive.finalize();
 
-  archive.pipe(reply.raw);
+  
 });
 
 fastify.get('/api/files/:packageName', async (req, reply) => {
