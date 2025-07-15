@@ -95,12 +95,12 @@ async function processStep(stepWithDetails) {
   const fastifyPublicOutputsPath = path.resolve(cwd, `../../public/${pkgDetails.name}`);
   console.info(`fastify public path`)
   console.info(fastifyPublicOutputsPath)
-  // if (!fs.existsSync(fastifyPublicOutputsPath)) fs.mkdirSync(fastifyPublicOutputsPath);
+  if (!fs.existsSync(fastifyPublicOutputsPath)) fs.mkdirSync(fastifyPublicOutputsPath);
 
   const volumeMappings = [
     [os.homedir() + '/.ssh', '/root/.ssh:ro'],
     [resolvedRepoDir, '/repo'],
-    // [fastifyPublicOutputsPath, '/outputs']
+    [fastifyPublicOutputsPath, '/outputs']
   ];
   
   const overrideYml = `
