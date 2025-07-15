@@ -4,51 +4,6 @@ import { spawn } from "child_process";
 import { sendToClients } from './ws.js';
 import os from 'os';
 
-// export function runDockerComposeBuild(serviceName, overridePath, resolvedRepoDir, env) {
-//   spawn('docker', [
-//     'compose',
-//     '-f', 'docker-compose.yml',
-//     'build',
-//     'test-service'
-//   ]);
-
-//   console.info(`did not crash`)
-//   return;
-//   const args = [
-//     'compose',
-//     '-f', 'docker-compose.yml',
-//     '-f', overridePath,
-//     'build',
-//     serviceName
-//   ]
-//   console.info(args)
-//   console.log('🚧 Checking environment before spawn:');
-//   console.log('cwd:', resolvedRepoDir);
-//   console.log('docker exists:', fs.existsSync('/usr/bin/docker'));
-//   console.log('PATH:', process.env.PATH);
-//   const build = spawn('docker', args, {
-//     cwd: resolvedRepoDir,
-//     env: { ...process.env, ...env }
-//   });
-
-//   build.stdout.on('data', (data) => {
-//     sendToClients(data.toString());
-//   });
-
-//   build.stderr.on('data', (data) => {
-//     sendToClients(data.toString());
-//   });
-
-//   build.on('close', (code) => {
-//     if (code === 0) {
-//       resolve();
-//     } else {
-//       reject(new Error(`docker compose build failed with code ${code}`));
-//     }
-//   });
-
-//   build.on('error', reject);
-// }
 
 export function runDockerComposeService({
   repoDir,
