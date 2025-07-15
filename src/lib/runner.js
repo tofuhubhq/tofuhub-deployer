@@ -92,7 +92,7 @@ async function processStep(stepWithDetails) {
   const serviceName = 'tofuhub-runner';
   const resolvedRepoDir = path.resolve(repoDir);
 
-const fastifyPublicOutputsPath = path.resolve(process.cwd(), 'tofuhub-server/public', pkgDetails.name);
+const fastifyPublicOutputsPath = path.resolve(process.cwd(), 'public', pkgDetails.name);
 console.info(`fastify public path: ${fastifyPublicOutputsPath}`);
 if (!fs.existsSync(fastifyPublicOutputsPath)) {
   fs.mkdirSync(fastifyPublicOutputsPath, { recursive: true });
