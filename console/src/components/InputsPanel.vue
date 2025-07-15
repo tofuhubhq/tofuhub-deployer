@@ -140,7 +140,7 @@ async function deploy() {
     console.error('🚨 Deploy failed:', err)
     error.value = (err as Error).message
   } finally { 
-    isLoading.value = false;
+    // isLoading.value = false;
   }
 }
 
@@ -229,6 +229,9 @@ function resetCollisionRetry(key: string) {
         </p>
       </div>
       <button @click="deploy" :disabled="hasCollisions || isLoading">Deploy</button>
+      <a :href="`/api/download/${packageName}.zip`" download>
+        📦 Download full deployment archive
+      </a>
       <!-- <button @click="checkCollisions" :disabled="isLoading">Check collisions</button> -->
     </div>
   </div>

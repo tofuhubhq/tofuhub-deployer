@@ -16,6 +16,7 @@ import { logClients } from './lib/ws.js';
 import { setGithubToken } from './lib/github.js';
 import { checkCollisions } from './lib/collisions.js';
 import { destroyDroplet } from './lib/digitalocean.js';
+import archiver from 'archiver';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,6 +49,24 @@ fastify.register(fastifyStatic, {
   root: path.join(resolve('public'), 'outputs'),
   prefix: '/public/',
   decorateReply: false, // ✅ prevent duplicate decorator
+});
+
+fastify.get('/api/download/:packageName.zip', async (req, reply) => {
+  const { packageName } = req.params;
+  const folderPath = path.join(resolve('public'), 'outputs', packageName);
+
+  if (!fs.existsSync(folderPath)) {
+    return reply.code(404).send({ error: 'Package not found' });
+  }
+
+  reply.header('Content-Type', 'application/zip');
+  reply.header('Content-Disposition', `attachment; filename="${packageName}.zip"`);
+
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  archive.directory(folderPath, false);
+  archive.finalize();
+
+  archive.pipe(reply.raw);
 });
 
 fastify.get('/api/files/:packageName', async (req, reply) => {
