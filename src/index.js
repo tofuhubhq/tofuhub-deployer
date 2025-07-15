@@ -65,10 +65,10 @@ fastify.get('/api/download/:packageName.zip', async (req, reply) => {
   const archive = archiver('zip', { zlib: { level: 9 } });
   archive.pipe(reply.raw);
 
-  fs.readdirSync(outputsRoot, { withFileTypes: true })
+  fs.readdirSync(folderPath, { withFileTypes: true })
     .filter(dirent => dirent.isDirectory())
     .forEach(dirent => {
-      const pkgPath = path.join(outputsRoot, dirent.name);
+      const pkgPath = path.join(folderPath, dirent.name);
       archive.directory(pkgPath, dirent.name);     // preserve folder name inside zip
     });
 
