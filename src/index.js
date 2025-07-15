@@ -53,7 +53,7 @@ fastify.register(fastifyStatic, {
 
 fastify.get('/api/download/:packageName.zip', async (req, reply) => {
   const { packageName } = req.params;
-  const folderPath = path.join(resolve('public'), 'outputs', packageName);
+  const folderPath = path.join(resolve('public'), 'outputs');
 
   if (!fs.existsSync(folderPath)) {
     return reply.code(404).send({ error: 'Package not found' });
