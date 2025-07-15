@@ -92,7 +92,9 @@ async function processStep(stepWithDetails) {
   const serviceName = 'tofuhub-runner';
   const resolvedRepoDir = path.resolve(repoDir);
 
-  // const fastifyPublicOutputsPath = path.resolve(cwd, `../../public/${pkgDetails.name}`);
+  const fastifyPublicOutputsPath = path.resolve(cwd, `../../public/${pkgDetails.name}`);
+  console.info(`fastify public path`)
+  console.info(fastifyPublicOutputsPath)
   // if (!fs.existsSync(fastifyPublicOutputsPath)) fs.mkdirSync(fastifyPublicOutputsPath);
 
   const volumeMappings = [
