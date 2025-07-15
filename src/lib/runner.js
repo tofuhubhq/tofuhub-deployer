@@ -238,6 +238,7 @@ export async function run() {
   console.debug(`Started processing steps..`)
   const steps = getSteps();
 
+  console.info(steps)
   for (const step of steps) {
     await processStep(step)
   }
