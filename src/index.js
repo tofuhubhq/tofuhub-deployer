@@ -61,7 +61,7 @@ fastify.get('/api/download/:packageName.zip', async (req, reply) => {
 
   reply
     .type('application/zip')
-    .header('Content-Disposition', `attachment; filename="${packageName}.zip"`);
+    .header('Content-Disposition', `attachment; filename="tofuhub-bundle.zip"`);
 
   const archive = archiver('zip', { zlib: { level: 9 } });
 
