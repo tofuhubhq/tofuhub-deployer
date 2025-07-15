@@ -37,13 +37,18 @@ async function processStep(stepWithDetails) {
   // Upload SSH key to all relevant providers
   const keyIds = await uploadPublicKeyToAllProviders(pubKey, pkgDetails.versions.configuration.inputs, getInputs());
   
+  
   // If the tofuhub directory does not exist, then create it. This is where
   // all the repos will be cloned into by the runner
   const cwd = process.cwd();
+  console.info(cwd)
   const tofuhubDir = path.join(cwd, 'tofuhub');
-  if (!fs.existsSync(tofuhubDir)) fs.mkdirSync(tofuhubDir);
+  console.info(tofuhubDir)
+  if (!fs.existsSync(tofuhubDir)) {
+    console.info(`cretaed ${tofuhubDir}`)
+    fs.mkdirSync(tofuhubDir);
+  } 
 
-  const packageType = pkgDetails.package_types.name;
   const repoUrl = pkgDetails.versions.repository;
   const repoDir = path.join(tofuhubDir, packageName);
 
