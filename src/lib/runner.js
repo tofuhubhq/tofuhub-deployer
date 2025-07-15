@@ -37,14 +37,13 @@ async function processStep(stepWithDetails) {
   // Upload SSH key to all relevant providers
   const keyIds = await uploadPublicKeyToAllProviders(pubKey, pkgDetails.versions.configuration.inputs, getInputs());
   
-  
-  // If the tofuhub directory does not exist, then create it. This is where
-  // all the repos will be cloned into by the runner
-  const outputsDir = '/outputs'
-  if (!fs.existsSync(outputsDir)) fs.mkdirSync(outputsDir);
+  const repoDir = path.resolve(process.cwd(), 'public/outputs', packageName);
+  console.info(`fastify public path: ${repoDir}`);
+  if (!fs.existsSync(repoDir)) {
+    fs.mkdirSync(repoDir, { recursive: true });
+  }
 
   const repoUrl = pkgDetails.versions.repository;
-  const repoDir = path.join(outputsDir, packageName);
 
   // Clone the repo
   console.log(`📥 Cloning ${repoUrl} to ${repoDir}`);
@@ -54,7 +53,6 @@ async function processStep(stepWithDetails) {
   // await checkCollisions();
 
   // const githubToken = await getGithubToken(); // new line
-  let renamedRepoDir = repoDir;
   
   // console.info(process.env)
   // console.info(githubToken)
@@ -69,7 +67,7 @@ async function processStep(stepWithDetails) {
   // }
   
   // Read the Dockerfile and build an image with it
-  const dockerfilePath = path.join(renamedRepoDir, 'Dockerfile'); 
+  const dockerfilePath = path.join(repoDir, 'Dockerfile'); 
 
   if (!fs.existsSync(dockerfilePath)) {
     console.error(`❌ No Dockerfile found for ${name}`);
@@ -78,8 +76,7 @@ async function processStep(stepWithDetails) {
 
   console.log(`🚀 Running container for ${name}`);
   return runDockerComposeService({
-    packageName: packageName,
-    repoDir: renamedRepoDir,
+    repoDir,
     env: {
       // githubToken,
       ...getInputs(),

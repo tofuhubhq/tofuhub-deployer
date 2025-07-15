@@ -6,7 +6,6 @@ import os from 'os';
 
 
 export function runDockerComposeService({
-  packageName,
   repoDir,
   serviceName = 'tofuhub-worker',
   env = {},                       // key-value map
@@ -18,16 +17,10 @@ export function runDockerComposeService({
   const resolvedRepoDir = path.resolve(repoDir);
   const overridePath = path.join(os.tmpdir(), 'tofuhub.override.yml');
 
-  const fastifyPublicOutputsPath = path.resolve(process.cwd(), 'public/outputs', packageName);
-  console.info(`fastify public path: ${fastifyPublicOutputsPath}`);
-  if (!fs.existsSync(fastifyPublicOutputsPath)) {
-    fs.mkdirSync(fastifyPublicOutputsPath, { recursive: true });
-  }
-
   // === Generate override file for volumes ===
   const volumeMappings = [
     [os.homedir() + '/.ssh', '/root/.ssh:ro'],
-    [fastifyPublicOutputsPath, '/outputs'],
+    [repoDir, '/outputs'],
     ['/var/run/docker.sock', '/var/run/docker.sock'],
     ...extraVolumes
   ];
