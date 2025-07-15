@@ -63,6 +63,7 @@ fastify.get('/api/download/:packageName.zip', async (req, reply) => {
   reply.header('Content-Disposition', `attachment; filename="${packageName}.zip"`);
 
   const archive = archiver('zip', { zlib: { level: 9 } });
+  console.info(folderPath)
   archive.directory(folderPath, false);
   archive.finalize();
 
