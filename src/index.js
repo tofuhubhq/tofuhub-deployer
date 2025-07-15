@@ -53,26 +53,30 @@ fastify.register(fastifyStatic, {
 
 fastify.get('/api/download/:packageName.zip', async (req, reply) => {
   const { packageName } = req.params;
-  const folderPath = path.join(resolve('public'), 'outputs');
 
-  if (!fs.existsSync(folderPath)) {
-    return reply.code(404).send({ error: 'Package not found' });
+  const outputsRoot = path.join(resolve('public'), 'outputs');
+  if (!fs.existsSync(outputsRoot)) {
+    return reply.code(404).send({ error: 'No outputs folder' });
   }
 
-  reply.header('Content-Type', 'application/zip');
-  reply.header('Content-Disposition', `attachment; filename="${packageName}.zip"`);
+  reply
+    .type('application/zip')
+    .header('Content-Disposition', `attachment; filename="${packageName}.zip"`);
 
   const archive = archiver('zip', { zlib: { level: 9 } });
+
+  // 1️⃣  Pipe archive into the HTTP response first
   archive.pipe(reply.raw);
 
-  fs.readdirSync(folderPath, { withFileTypes: true })
-    .filter(dirent => dirent.isDirectory())
-    .forEach(dirent => {
-      const pkgPath = path.join(folderPath, dirent.name);
-      archive.directory(pkgPath, dirent.name);     // preserve folder name inside zip
+  // 2️⃣  Add every package sub-folder
+  fs.readdirSync(outputsRoot, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .forEach(d => {
+      archive.directory(path.join(outputsRoot, d.name), d.name); // keep folder name
     });
 
-  archive.finalize();
+  // 3️⃣  Finalise the archive (starts streaming)
+  await archive.finalize();          // ⬅ keep handler alive until done
 });
 
 fastify.get('/api/files/:packageName', async (req, reply) => {
