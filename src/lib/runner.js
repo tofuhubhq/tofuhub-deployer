@@ -59,8 +59,6 @@ async function processStep(stepWithDetails) {
   console.log(`📥 Cloning ${repoUrl} to ${repoDir}`);
   execSync(`git clone ${repoUrl} ${repoDir}`, { stdio: 'inherit' });
 
-  return;
-
   // TODO: add collision checking also before it runs
   // await checkCollisions();
 
@@ -94,13 +92,13 @@ async function processStep(stepWithDetails) {
   const serviceName = 'tofuhub-runner';
   const resolvedRepoDir = path.resolve(repoDir);
 
-  const fastifyPublicOutputsPath = path.resolve(cwd, `../../public/${pkgDetails.name}`);
-  if (!fs.existsSync(fastifyPublicOutputsPath)) fs.mkdirSync(fastifyPublicOutputsPath);
+  // const fastifyPublicOutputsPath = path.resolve(cwd, `../../public/${pkgDetails.name}`);
+  // if (!fs.existsSync(fastifyPublicOutputsPath)) fs.mkdirSync(fastifyPublicOutputsPath);
 
   const volumeMappings = [
     [os.homedir() + '/.ssh', '/root/.ssh:ro'],
     [resolvedRepoDir, '/repo'],
-    [fastifyPublicOutputsPath, '/outputs']
+    // [fastifyPublicOutputsPath, '/outputs']
   ];
   
   const overrideYml = `
