@@ -10,11 +10,15 @@ import path from 'path';
 import { resolve } from 'path';
 import cors from '@fastify/cors'
 
+import { fileURLToPath } from 'url';
 import { rm } from 'fs/promises';
 import { logClients } from './lib/ws.js';
 import { setGithubToken } from './lib/github.js';
 import { checkCollisions } from './lib/collisions.js';
 import { destroyDroplet } from './lib/digitalocean.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
