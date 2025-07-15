@@ -92,15 +92,16 @@ async function processStep(stepWithDetails) {
   const serviceName = 'tofuhub-runner';
   const resolvedRepoDir = path.resolve(repoDir);
 
-  const fastifyPublicOutputsPath = path.resolve(cwd, `../../public/${pkgDetails.name}`);
-  console.info(`fastify public path`)
-  console.info(fastifyPublicOutputsPath)
-  if (!fs.existsSync(fastifyPublicOutputsPath)) fs.mkdirSync(fastifyPublicOutputsPath);
+const fastifyPublicOutputsPath = path.resolve(process.cwd(), 'tofuhub-server/public', pkgDetails.name);
+console.info(`fastify public path: ${fastifyPublicOutputsPath}`);
+if (!fs.existsSync(fastifyPublicOutputsPath)) {
+  fs.mkdirSync(fastifyPublicOutputsPath, { recursive: true });
+}
 
   const volumeMappings = [
     [os.homedir() + '/.ssh', '/root/.ssh:ro'],
     [resolvedRepoDir, '/repo'],
-    // [fastifyPublicOutputsPath, '/outputs']
+    [fastifyPublicOutputsPath, '/outputs']
   ];
   
   const overrideYml = `
