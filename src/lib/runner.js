@@ -83,11 +83,14 @@ async function processStep(stepWithDetails) {
   const overridePath = path.join(os.tmpdir(), 'tofuhub.override.yml');
   const serviceName = 'tofuhub-runner';
   const resolvedRepoDir = path.resolve(repoDir);
-    // === Generate override file for volumes ===
+
+  const fastifyPublicOutputsPath = path.resolve(cwd, `../../public/${pkgDetails.name}`);
+  if (!fs.existsSync(fastifyPublicOutputsPath)) fs.mkdirSync(fastifyPublicOutputsPath);
+
   const volumeMappings = [
     [os.homedir() + '/.ssh', '/root/.ssh:ro'],
     [resolvedRepoDir, '/repo'],
-    // ['/var/run/docker.sock', '/var/run/docker.sock'],
+    [fastifyPublicOutputsPath, '/outputs']
   ];
   
   const overrideYml = `
