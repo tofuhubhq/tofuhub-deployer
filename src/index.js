@@ -37,10 +37,16 @@ const fastify = Fastify({
   // })
 });
 
-// Serve static files from the "public" folder
+// Serve Vue app + assets
+fastify.register(fastifyStatic, {
+  root: resolve('public'),
+  prefix: '/',
+});
+
+// Serve user-generated files
 fastify.register(fastifyStatic, {
   root: path.join(resolve('public'), 'outputs'),
-  prefix: '/', // optional: serve at root
+  prefix: '/public/',
 });
 
 fastify.get('/api/files/:packageName', async (req, reply) => {
