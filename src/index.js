@@ -112,7 +112,7 @@ fastify.post('/collisions/check', async (request) => {
 });
 
 fastify.setNotFoundHandler((req, reply) => {
-  const indexPath = path.join(__dirname, 'public', 'index.html');
+  const indexPath = path.join(__dirname, '..', 'public', 'index.html');
 
   // If it's a request for a frontend route (not an API or file)
   if (
