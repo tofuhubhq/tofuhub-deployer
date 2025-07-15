@@ -39,7 +39,7 @@ const fastify = Fastify({
 
 // Serve static files from the "public" folder
 fastify.register(fastifyStatic, {
-  root: resolve('public'),
+  root: path.join(resolve('public'), 'outputs'),
   prefix: '/', // optional: serve at root
 });
 
