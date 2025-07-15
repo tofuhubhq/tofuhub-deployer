@@ -15,8 +15,8 @@ import { rm } from 'fs/promises';
 import { logClients } from './lib/ws.js';
 import { setGithubToken } from './lib/github.js';
 import { checkCollisions } from './lib/collisions.js';
-import { destroyDroplet } from './lib/digitalocean.js';
 import archiver from 'archiver';
+import { deleteDropletById } from './lib/digitalocean.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -137,14 +137,25 @@ fastify.post('/auth/github', async (request) => {
   }
 });
 
-// POST /destroy
-fastify.post('/destroy', async (request, reply) => {
-  return destroyDroplet()
-});
-
 // POST /collisions/check checks for collisions
 fastify.post('/collisions/check', async (request) => {
   return checkCollisions(request.body);
+});
+
+fastify.post('/destroy/by-id', async (request, reply) => {
+  const { droplet_id, token, deployer } = request.body;
+
+  if (!droplet_id || !token) {
+    return reply.code(400).send({ error: 'Missing droplet_id or token' });
+  }
+
+  try {
+    const result = await deleteDropletById(droplet_id, token);
+    return { ...result, deployer };
+  } catch (err) {
+    request.log.error(err);
+    return reply.code(500).send({ error: err.message });
+  }
 });
 
 fastify.setNotFoundHandler((req, reply) => {

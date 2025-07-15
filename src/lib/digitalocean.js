@@ -85,21 +85,18 @@ export async function checkVPCNameExists(name, token) {
   return data.vpcs.some((vpc) => vpc.name === name);
 }
 
-// Destroys a droplet (machine) given its numeric ID.
-// Returns true when DigitalOcean accepts the request (204 No Content),
-// otherwise throws an error with the HTTP status text.
-export async function destroyDroplet(id, token) {
-  const res = await fetch(`${DIGITAL_OCEAN_API}/droplets/${id}`, {
+export async function deleteDropletById(droplet_id, token) {
+  const res = await fetch(`https://api.digitalocean.com/v2/droplets/${droplet_id}`, {
     method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
-  if (res.ok) {
-    // DO returns 204 No Content on success
-    return true;
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Failed to delete droplet ${droplet_id}: ${err}`);
   }
 
-  // Optional: inspect the JSON body for a richer message
-  const errText = res.statusText || `HTTP ${res.status}`;
-  throw new Error(`Failed to destroy droplet ${id}: ${errText}`);
+  return { success: true, droplet_id };
 }

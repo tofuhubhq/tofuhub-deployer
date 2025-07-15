@@ -9,12 +9,11 @@ const HOST =
 
 const HTTP_HOST = `http://${HOST}`
 const WS_HOST = `ws://${HOST}`
-
-console.info(HOST)
-console.info(HTTP_HOST)
-console.info(WS_HOST)
 const route = useRoute()
 const router = useRouter()
+
+const deployer = computed(() => route.query.deployer as string | undefined)
+const dropletId = computed(() => route.query.droplet_id as string | undefined)
 
 // ---- reactive state -------------------------------------------------------
 const isLoading = ref(false)
@@ -171,6 +170,37 @@ function resetCollisionRetry(key: string) {
     delete collisions.value[key]
   }
 }
+
+async function destroyDroplet() {
+  if (!deployer.value || !dropletId.value) {
+    error.value = 'Missing deployer or droplet_id in URL';
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    const res = await fetch(`${HTTP_HOST}/destroy/by-id`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        deployer: deployer.value,
+        droplet_id: Number(dropletId.value),
+        token: import.meta.env.VITE_DO_TOKEN || '' // or prompt user input securely
+      })
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+
+    const result = await res.json();
+    console.info('🗑️ Droplet destroyed:', result);
+    alert(`Droplet ${result.droplet_id} destroyed.`);
+  } catch (err) {
+    console.error('🚨 Droplet destruction failed:', err);
+    error.value = (err as Error).message;
+  } finally {
+    isLoading.value = false;
+  }
+}
 </script>
 
 <template>
@@ -232,6 +262,13 @@ function resetCollisionRetry(key: string) {
       <a :href="`/api/download/${packageName}.zip`" download>
         📦 Download full deployment archive
       </a>
+      <button
+        v-if="deployer && dropletId"
+        @click="destroyDroplet"
+        :disabled="isLoading"
+      >
+        🗑️ Destroy Droplet ({{ dropletId }})
+      </button>
       <!-- <button @click="checkCollisions" :disabled="isLoading">Check collisions</button> -->
     </div>
   </div>
