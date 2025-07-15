@@ -18,7 +18,10 @@ onMounted(async () => {
     <h3>📁 Files</h3>
     <ul>
       <li v-for="file in files" :key="file">
-        <a :href="`/public/${packageName}/${file}`" target="_blank">
+        <a 
+          :href="`/public/${packageName}/${file}`"
+          :download="file"
+          >
           {{ file }}
         </a>
       </li>
