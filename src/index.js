@@ -6,6 +6,7 @@ import { getState, initState, resetState, setInputs, setVariables } from './lib/
 import fastifyStatic from '@fastify/static';
 import websocket from '@fastify/websocket';
 import * as dotenv from 'dotenv';
+import path from 'path';
 import { resolve } from 'path';
 import cors from '@fastify/cors'
 
