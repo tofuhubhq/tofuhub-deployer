@@ -63,12 +63,16 @@ fastify.get('/api/download/:packageName.zip', async (req, reply) => {
   reply.header('Content-Disposition', `attachment; filename="${packageName}.zip"`);
 
   const archive = archiver('zip', { zlib: { level: 9 } });
-  console.info(folderPath)
   archive.pipe(reply.raw);
-  archive.directory(folderPath, false);
-  archive.finalize();
 
-  
+  fs.readdirSync(outputsRoot, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory())
+    .forEach(dirent => {
+      const pkgPath = path.join(outputsRoot, dirent.name);
+      archive.directory(pkgPath, dirent.name);     // preserve folder name inside zip
+    });
+
+  archive.finalize();
 });
 
 fastify.get('/api/files/:packageName', async (req, reply) => {
