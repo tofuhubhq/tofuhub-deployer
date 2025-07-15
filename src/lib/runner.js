@@ -100,7 +100,7 @@ async function processStep(stepWithDetails) {
   const volumeMappings = [
     [os.homedir() + '/.ssh', '/root/.ssh:ro'],
     [resolvedRepoDir, '/repo'],
-    [fastifyPublicOutputsPath, '/outputs']
+    // [fastifyPublicOutputsPath, '/outputs']
   ];
   
   const overrideYml = `
