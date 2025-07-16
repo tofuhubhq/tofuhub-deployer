@@ -10,6 +10,7 @@ import {
   checkLoadBalancerNameExists,
   checkVPCNameExists
 } from "./digitalocean.js";
+import { getSteps } from "./state.js";
 
 const PRIMITIVES = [
   "domain",

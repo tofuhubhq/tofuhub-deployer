@@ -1,11 +1,8 @@
 import { getState, getSteps, getInputs } from "./state.js"
 import path from 'path';
-import os, { homedir } from 'os';
 import fs, { readFileSync } from 'fs';
 import https from 'https';
 import { execSync } from "child_process";
-// import { createGithubRepoAndPush, getGithubToken } from "./github.js";
-import { sendToClients } from "./ws.js";
 import { fetchPackage } from "./repo.js";
 import { runDockerComposeService } from "./docker.js";
 import { checkCollisions } from "./collisions.js";
