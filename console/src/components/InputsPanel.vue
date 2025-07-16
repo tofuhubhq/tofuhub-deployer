@@ -59,21 +59,24 @@ async function initPackageState (packageName: string) {
     variables.value = data.variables ?? {}
     // Seed the form with default / first accepted value
     form.value = Object.fromEntries(
-      Object.entries(variables.value)
-        .sort(([_, a]: any, [__, b]: any) => {
-          // Push access_token primitives to the top
-          if (a.primitive === 'access_token' && b.primitive !== 'access_token') return -1
-          if (a.primitive !== 'access_token' && b.primitive === 'access_token') return 1
+      [...Object.entries(variables.value)]
+      .sort(([_, a]: any, [__, b]: any) => {
+          const aPrim = a.primitive ?? ''
+          const bPrim = b.primitive ?? ''
+          if (aPrim === 'access_token' && bPrim !== 'access_token') return -1
+          if (aPrim !== 'access_token' && bPrim === 'access_token') return 1
           return 0
         })
         .map(([key, cfg]: any) => {
-        const fallback =
-          cfg.default ??
-          (Array.isArray(cfg.accepted_values) && cfg.accepted_values[0]) ??
-          ''
-        return [key, fallback]
-      })
+          const fallback =
+            cfg.default ??
+            (Array.isArray(cfg.options) && cfg.options[0]?.value) ??
+            ''
+          return [key, fallback]
+        })
     )
+
+    console.info(form.value)
 
   } catch (e: any) {
     error.value = e.message || 'Init failed'
@@ -222,25 +225,42 @@ async function destroyDroplet() {
 
     <div v-else>
       <div
-        v-for="(config, key) in variables"
+        v-for="key in Object.keys(form)"
         :key="key"
         class="form-group"
       >
-      <label :for="key" class="label-with-tooltip">
-        {{ key }}
-        <span
-          v-if="config.description"
-          class="tooltip-icon"
-          :title="config.description"
-        >❓</span>
-      </label>
+        <label :for="key" class="label-with-tooltip">
+          {{ key }}
+          <span
+            v-if="variables[key].description"
+            class="tooltip-icon"
+            :title="variables[key].description"
+          >❓</span>
+        </label>
+
+        <select
+          v-if="Array.isArray(variables[key].options) && variables[key].options.length"
+          :id="key"
+          v-model="form[key]"
+          :disabled="isLoading"
+          @change="() => resetCollisionRetry(key)"
+          :class="{ 'colliding': collisions[key]?.exists, 'invalid': invalidFields[key] }"
+        >
+          <option
+            v-for="option in variables[key].options"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
+        </select>
 
         <input
-          v-if="config.type === 'string' || config.type === 'number'"
+          v-else
           :id="key"
-          :type="config.type === 'number' ? 'number' : 'text'"
+          :type="variables[key].type === 'number' ? 'number' : 'text'"
           v-model="form[key]"
-          :placeholder="config.description"
+          :placeholder="variables[key].description"
           :disabled="isLoading"
           :class="{
             'colliding': collisions[key]?.exists,
@@ -249,31 +269,19 @@ async function destroyDroplet() {
           @input="() => resetCollisionRetry(key)"
         />
 
-        <select
-          v-else-if="config.accepted_values?.length"
-          :id="key"
-          v-model="form[key]"
-          :disabled="isLoading"
-          @input="() => resetCollisionRetry(key)"
-          :class="{ 'colliding': collisions[key]?.exists }"
-        >
-          <option
-            v-for="val in config.accepted_values"
-            :key="val"
-            :value="val"
-          >
-            {{ val }}
-          </option>
-        </select>
-
         <p v-if="collisions[key]?.exists" class="collision-msg">
           {{ collisions[key].message || 'Collision detected' }}
         </p>
       </div>
-      <button @click="deploy" :disabled="hasCollisions || isLoading && !isRunning">Deploy</button>
+
+      <button @click="deploy" :disabled="hasCollisions || isLoading && !isRunning">
+        Deploy
+      </button>
+
       <a :href="`/api/download/${packageName}.zip`" download>
         📦 Download full deployment archive
       </a>
+
       <button
         v-if="deployer && dropletId"
         @click="destroyDroplet"
@@ -281,7 +289,6 @@ async function destroyDroplet() {
       >
         🗑️ Destroy Droplet ({{ dropletId }})
       </button>
-      <!-- <button @click="checkCollisions" :disabled="isLoading">Check collisions</button> -->
     </div>
   </div>
 </template>
