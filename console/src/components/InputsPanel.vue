@@ -24,6 +24,7 @@ const form        = ref<Record<string, any>>({})
 const loading     = ref(true)
 const error       = ref<string | null>(null)
 const collisions = ref<Record<string, { exists: boolean; message?: string }>>({})
+const invalidFields = ref<Record<string, boolean>>({})
 
 const packageName = computed(() => {
   return route.query.package as string | undefined
@@ -58,7 +59,14 @@ async function initPackageState (packageName: string) {
     variables.value = data.variables ?? {}
     // Seed the form with default / first accepted value
     form.value = Object.fromEntries(
-      Object.entries(variables.value).map(([key, cfg]: any) => {
+      Object.entries(variables.value)
+        .sort(([_, a]: any, [__, b]: any) => {
+          // Push access_token primitives to the top
+          if (a.primitive === 'access_token' && b.primitive !== 'access_token') return -1
+          if (a.primitive !== 'access_token' && b.primitive === 'access_token') return 1
+          return 0
+        })
+        .map(([key, cfg]: any) => {
         const fallback =
           cfg.default ??
           (Array.isArray(cfg.accepted_values) && cfg.accepted_values[0]) ??
@@ -109,6 +117,24 @@ function setupLogStream(stepName?: string) {
 }
 
 async function deploy() {
+  // Early validation
+  // Reset previous state
+  invalidFields.value = {}
+
+  let foundInvalid = false
+  for (const [key, value] of Object.entries(form.value)) {
+    const isInvalid = value === null || value === undefined || value === ''
+    if (isInvalid) {
+      invalidFields.value[key] = true
+      foundInvalid = true
+    }
+  }
+
+  if (foundInvalid) {
+    error.value = 'Please fill in all required fields.'
+    return
+  }
+
   isLoading.value = true;
   
   try {
@@ -142,28 +168,6 @@ async function deploy() {
     // optionally route to a log screen or show toast
   } catch (err) {
     console.error('🚨 Deploy failed:', err)
-    error.value = (err as Error).message
-  } finally { 
-    isLoading.value = false;
-  }
-}
-
-async function checkCollisions() {
-  isLoading.value = true;
-  try {
-    console.info(`${HTTP_HOST}/collisions/check`)
-    const res = await fetch(`${HTTP_HOST}/collisions/check`, {
-      method : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify(form.value),
-    })
-
-    if (!res.ok) throw new Error(await res.text())
-    const result = await res.json()
-
-    collisions.value = result
-  } catch (err) {
-    console.error('🚨 Collision check failed:', err)
     error.value = (err as Error).message
   } finally { 
     isLoading.value = false;
@@ -214,7 +218,7 @@ async function destroyDroplet() {
     <h2 v-else>No package specified</h2>
 
     <div v-if="loading">Loading variables…</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
+    <!-- <div v-else-if="error" class="error">{{ error }}</div> -->
 
     <div v-else>
       <div
@@ -238,7 +242,10 @@ async function destroyDroplet() {
           v-model="form[key]"
           :placeholder="config.description"
           :disabled="isLoading"
-          :class="{ 'colliding': collisions[key]?.exists }"
+          :class="{
+            'colliding': collisions[key]?.exists,
+            'invalid': invalidFields[key]
+          }"
           @input="() => resetCollisionRetry(key)"
         />
 
@@ -335,6 +342,11 @@ select:focus {
 }
 
 .colliding {
+  border: 2px solid #dc2626 !important;
+  background-color: #fef2f2 !important;
+}
+
+.invalid {
   border: 2px solid #dc2626 !important;
   background-color: #fef2f2 !important;
 }
