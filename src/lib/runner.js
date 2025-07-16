@@ -189,7 +189,7 @@ async function uploadPublicKeyToAllProviders(pubKey, configMap, inputs) {
 export async function run() {
   console.debug(`Started processing steps..`)
   const steps = getSteps();
-  const collisions = checkCollisions();
+  const collisions = await checkCollisions();
 
   const conflicting = Object.entries(collisions || {}).filter(
     ([_, entry]) => entry.exists === true
