@@ -58,6 +58,7 @@ async function doCheckCollisions(schemaInputs, inputs) {
   if (!found) return;
   
   console.info(found[0])
+  console.info(inputs)
   const token = inputs[found[0]] 
   
   if (!token) {
