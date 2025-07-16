@@ -59,11 +59,11 @@ async function doCheckCollisions(schemaInputs, inputs) {
   
   
   const token = inputs[found[0]] 
+  console.info(token)
   if (!token) {
     throw new Error("Missing 'do_access_token' in inputs");
   }
 
-  console.info(token)
   const results = {};
 
   for (const [key, value] of Object.entries(inputs)) {
