@@ -50,7 +50,6 @@ export async function initState(packages) {
   }
 
   const variables = mergeInputsWithConflictCheck(fetchedPackages);
-  console.info(variables)
   for (const [key, value] of Object.entries(variables)) {
     setVariable(key, value)
   }
