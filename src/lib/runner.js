@@ -189,6 +189,8 @@ async function uploadPublicKeyToAllProviders(pubKey, configMap, inputs) {
 export async function run() {
   console.debug(`Started processing steps..`)
   const steps = getSteps();
+  const inputs = getInputs();
+  console.info(inputs)
   const collisions = await checkCollisions();
 
   const conflicting = Object.entries(collisions || {}).filter(
@@ -203,7 +205,6 @@ export async function run() {
     throw new Error(`Collision detected:\n${conflictMessages}`);
   }
 
-  console.info(`No collisions found`)
   for (const step of steps) {
     await processStep(step)
   }
