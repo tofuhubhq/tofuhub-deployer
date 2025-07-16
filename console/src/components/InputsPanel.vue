@@ -18,6 +18,7 @@ const token = computed(() => route.query.token as string | undefined)
 
 // ---- reactive state -------------------------------------------------------
 const isLoading = ref(false)
+const isRunning = ref(false)
 const variables   = ref<Record<string, any>>({})
 const form        = ref<Record<string, any>>({})
 const loading     = ref(true)
@@ -109,6 +110,7 @@ function setupLogStream(stepName?: string) {
 
 async function deploy() {
   isLoading.value = true;
+  
   try {
     /* ── 1. run a last-second collision check ───────────────────────────── */
     const colRes = await fetch(`${HTTP_HOST}/collisions/check`, {
@@ -133,6 +135,8 @@ async function deploy() {
 
     if (!res.ok) throw new Error(await res.text())
     console.log('✅ Deployment started')
+
+    isRunning.value = true;
     setupLogStream()
 
     // optionally route to a log screen or show toast
@@ -140,7 +144,7 @@ async function deploy() {
     console.error('🚨 Deploy failed:', err)
     error.value = (err as Error).message
   } finally { 
-    // isLoading.value = false;
+    isLoading.value = false;
   }
 }
 
@@ -259,7 +263,7 @@ async function destroyDroplet() {
           {{ collisions[key].message || 'Collision detected' }}
         </p>
       </div>
-      <button @click="deploy" :disabled="hasCollisions || isLoading">Deploy</button>
+      <button @click="deploy" :disabled="hasCollisions || isLoading && !isRunning">Deploy</button>
       <a :href="`/api/download/${packageName}.zip`" download>
         📦 Download full deployment archive
       </a>
