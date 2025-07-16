@@ -8,6 +8,7 @@ import { execSync } from "child_process";
 import { sendToClients } from "./ws.js";
 import { fetchPackage } from "./repo.js";
 import { runDockerComposeService } from "./docker.js";
+import { checkCollisions } from "./collisions.js";
 
 async function processStep(stepWithDetails) {
   console.info(`Processing step ${stepWithDetails.name}`)
@@ -24,7 +25,6 @@ async function processStep(stepWithDetails) {
     return;
   }
 
-  
   const pkgDetails = await fetchPackage(
     `https://api.tofuhub.co/functions/v1/packages/${packageName}`,
     process.env.TOFUHUB_API_TOKEN
@@ -38,7 +38,6 @@ async function processStep(stepWithDetails) {
   const keyIds = await uploadPublicKeyToAllProviders(pubKey, pkgDetails.versions.configuration.inputs, getInputs());
   
   const repoDir = path.resolve(process.cwd(), 'public/outputs', packageName);
-  console.info(`fastify public path: ${repoDir}`);
   if (!fs.existsSync(repoDir)) {
     fs.mkdirSync(repoDir, { recursive: true });
   }
@@ -190,12 +189,24 @@ async function uploadPublicKeyToAllProviders(pubKey, configMap, inputs) {
   return keyIds;
 }
 
-
 export async function run() {
   console.debug(`Started processing steps..`)
   const steps = getSteps();
+  const collisions = checkCollisions();
 
-  console.info(steps)
+  const conflicting = Object.entries(collisions || {}).filter(
+    ([_, entry]) => entry.exists === true
+  );
+
+  if (conflicting.length > 0) {
+    const conflictMessages = conflicting
+      .map(([key, entry]) => `${key}: ${entry.message}`)
+      .join('\n');
+
+    throw new Error(`Collision detected:\n${conflictMessages}`);
+  }
+
+  console.info(`No collisions found`)
   for (const step of steps) {
     await processStep(step)
   }
