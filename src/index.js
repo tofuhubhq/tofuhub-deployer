@@ -102,6 +102,7 @@ fastify.register(async function (app) {
 
 // POST /state/var
 fastify.post('/deploy', async (request, reply) => {
+  console.info(request.body)
   setInputs(request.body);
   run();
   return getState()
