@@ -106,7 +106,7 @@ export async function checkCollisions(inputs) {
 
   // Before we even start execution, we check for collisions.
   // This way we are sure we are not going to get stuck half way through.
-  const endResults = {};
+  let endResults = {};
   for (const step of steps) {
     const { package: packageName } = step;
 
