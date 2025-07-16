@@ -101,10 +101,8 @@ async function doCheckCollisions(schemaInputs, inputs) {
   return results;
 }
 
-export async function checkCollisions() {
+export async function checkCollisions(inputs) {
   const steps = getSteps();
-  const inputs = getInputs();
-  console.info(inputs)
 
   // Before we even start execution, we check for collisions.
   // This way we are sure we are not going to get stuck half way through.

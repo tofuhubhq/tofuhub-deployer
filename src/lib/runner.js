@@ -191,7 +191,7 @@ export async function run() {
   const steps = getSteps();
   const inputs = getInputs();
   console.info(inputs)
-  const collisions = await checkCollisions();
+  const collisions = await checkCollisions(inputs);
 
   const conflicting = Object.entries(collisions || {}).filter(
     ([_, entry]) => entry.exists === true
