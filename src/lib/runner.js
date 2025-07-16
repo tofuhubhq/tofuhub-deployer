@@ -6,6 +6,7 @@ import { execSync } from "child_process";
 import { fetchPackage } from "./repo.js";
 import { runDockerComposeService } from "./docker.js";
 import { checkCollisions } from "./collisions.js";
+import { homedir } from "os";
 
 async function processStep(stepWithDetails) {
   console.info(`Processing step ${stepWithDetails.name}`)
