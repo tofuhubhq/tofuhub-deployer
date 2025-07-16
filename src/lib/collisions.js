@@ -10,6 +10,7 @@ import {
   checkLoadBalancerNameExists,
   checkVPCNameExists
 } from "./digitalocean.js";
+import { fetchPackage } from "./repo.js";
 import { getInputs, getSteps } from "./state.js";
 
 const PRIMITIVES = [
