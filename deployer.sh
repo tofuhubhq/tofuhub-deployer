@@ -30,9 +30,26 @@ until docker info >/dev/null 2>&1; do
 done
 echo "✅ Docker is ready."
 
-echo "⏳ Waiting for apt lock..."
-while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-  sleep 1
+wait_for_apt() {
+  echo "⏳ Waiting for APT lock..."
+  while sudo lsof /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || \
+        sudo lsof /var/lib/dpkg/lock >/dev/null 2>&1 || \
+        sudo lsof /var/lib/apt/lists/lock >/dev/null 2>&1; do
+    echo "🔒 APT lock is still held, sleeping 3s..."
+    sleep 3
+  done
+  echo "✅ APT lock released"
+}
+
+wait_for_apt
+
+# Then retry install in case it fails
+for i in {1..5}; do
+  apt-get install -y nodejs && break || {
+    echo "❌ apt-get install failed, retrying in 5s..."
+    wait_for_apt
+    sleep 5
+  }
 done
 
 ### Install Node.js and npm
