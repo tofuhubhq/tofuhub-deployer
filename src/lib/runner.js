@@ -7,7 +7,6 @@ import { fetchPackage } from "./repo.js";
 import { runDockerComposeService } from "./docker.js";
 import { checkCollisions } from "./collisions.js";
 import { homedir } from "os";
-import crypto from 'crypto';
 
 async function processStep(stepWithDetails) {
   console.info(`Processing step ${stepWithDetails.name}`)
@@ -149,60 +148,40 @@ function findAccessTokenForProvider(provider, configMap, inputs) {
  * @param {Object} configMap - Configuration describing each input
  * @param {Object} inputs - Actual values for each input
  */
-// Helper to compute OpenSSH-style MD5 fingerprint
-function computePublicKeyFingerprint(pubKey) {
-  const base64 = pubKey.split(' ')[1];
-  const buffer = Buffer.from(base64, 'base64');
-  const hash = crypto.createHash('md5').update(buffer).digest('hex');
-  return hash.match(/.{2}/g).join(':'); // e.g., ab:cd:ef:...
-}
-
-export async function uploadPublicKeyToAllProviders(pubKey, configMap, inputs) {
-  const providers = new Set();
-  const keyIds = {};
-
-  const fingerprint = computePublicKeyFingerprint(pubKey);
+async function uploadPublicKeyToAllProviders(pubKey, configMap, inputs) {
+  const providers = new Set()
+  const keyIds = {}; // <-- result we return
 
   // Step 1: Extract all providers
   for (const key in configMap) {
-    const entry = configMap[key];
+    const entry = configMap[key]
     if (entry.provider) {
-      providers.add(entry.provider);
+      providers.add(entry.provider)
     }
   }
 
   // Step 2: Upload to each provider
   for (const provider of providers) {
-    const token = findAccessTokenForProvider(provider, configMap, inputs);
+    const token = findAccessTokenForProvider(provider, configMap, inputs)
 
     if (!token) {
-      console.warn(`⚠️  No access token found for provider "${provider}", skipping.`);
-      continue;
+      console.warn(`⚠️  No access token found for provider "${provider}", skipping.`)
+      continue
     }
 
     if (provider === 'digitalocean') {
       try {
-        console.log(`🔐 Checking for existing SSH key on DigitalOcean...`);
-        const existingKeys = await getDigitalOceanPublicKeys(token);
+        console.log(`🔐 Uploading SSH key to DigitalOcean...`)
+        const id = await pushPublicKeyToDigitalOcean(pubKey, 'tofuhub-deployer', token)
+        keyIds[provider] = id.toString(); // store as string for TF
 
-        const existing = existingKeys.find(k => k.fingerprint === fingerprint);
-
-        if (existing) {
-          console.log(`✅ Key already exists on DigitalOcean (ID: ${existing.id})`);
-          keyIds[provider] = existing.id.toString();
-          continue;
-        }
-
-        console.log(`🔐 Uploading SSH key to DigitalOcean...`);
-        const id = await pushPublicKeyToDigitalOcean(pubKey, 'tofuhub-deployer', token);
-        keyIds[provider] = id.toString();
-        console.log(`✅ SSH key uploaded to DigitalOcean.`);
+        console.log(`✅ SSH key uploaded to DigitalOcean.`)
       } catch (err) {
-        console.error(`❌ Failed to handle SSH key on DigitalOcean:`, err);
+        console.error(`❌ Failed to upload SSH key to DigitalOcean:`, err)
       }
     } else {
-      console.warn(`⚠️  No handler defined for provider "${provider}", skipping.`);
-    }
+      console.warn(`⚠️  No handler defined for provider "${provider}", skipping.`)
+    } 
   }
 
   return keyIds;
